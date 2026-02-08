@@ -1,0 +1,265 @@
+package cli
+
+import (
+	"context"
+	"fmt"
+	"os"
+	"os/signal"
+	"path/filepath"
+	"syscall"
+
+	"github.com/Lichas/nanobot-go/internal/agent"
+	"github.com/Lichas/nanobot-go/internal/bus"
+	"github.com/Lichas/nanobot-go/internal/channels"
+	"github.com/Lichas/nanobot-go/internal/config"
+	"github.com/Lichas/nanobot-go/internal/cron"
+	"github.com/Lichas/nanobot-go/internal/logging"
+	"github.com/Lichas/nanobot-go/internal/providers"
+	"github.com/Lichas/nanobot-go/internal/webui"
+	"github.com/spf13/cobra"
+)
+
+var gatewayPort int
+
+func init() {
+	gatewayCmd.Flags().IntVarP(&gatewayPort, "port", "p", 18890, "Gateway port")
+}
+
+// gatewayCmd 网关命令
+var gatewayCmd = &cobra.Command{
+	Use:   "gateway",
+	Short: "Start the nanobot gateway",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		cfg, err := config.LoadConfig()
+		if err != nil {
+			return fmt.Errorf("failed to load config: %w", err)
+		}
+
+		if _, err := logging.Init(config.GetDataDir()); err != nil {
+			fmt.Printf("⚠ logging init error: %v\n", err)
+		}
+
+		if lg := logging.Get(); lg != nil && lg.Gateway != nil {
+			lg.Gateway.Printf("gateway starting port=%d model=%s workspace=%s", gatewayPort, cfg.Agents.Defaults.Model, cfg.Agents.Defaults.Workspace)
+		}
+
+		// 检查 API key
+		apiKey := cfg.GetAPIKey("")
+		apiBase := cfg.GetAPIBase("")
+		if apiKey == "" {
+			return fmt.Errorf("no API key configured. Set one in ~/.nanobot/config.json")
+		}
+
+		fmt.Printf("%s Starting nanobot gateway on port %d...\n\n", logo, gatewayPort)
+
+		// 创建 Provider
+		provider, err := providers.NewOpenAIProvider(apiKey, apiBase, cfg.Agents.Defaults.Model)
+		if err != nil {
+			return fmt.Errorf("failed to create provider: %w", err)
+		}
+
+		// 创建组件
+		messageBus := bus.NewMessageBus(100)
+
+		// 创建 Cron 服务（需要先创建，传给 agent）
+		storePath := filepath.Join(cfg.Agents.Defaults.Workspace, ".cron", "jobs.json")
+		cronService := cron.NewService(storePath)
+		cronService.SetJobHandler(func(job *cron.Job) (string, error) {
+			return executeCronJob(cfg, apiKey, apiBase, cronService, job)
+		})
+
+		agentLoop := agent.NewAgentLoop(
+			messageBus,
+			provider,
+			cfg.Agents.Defaults.Workspace,
+			cfg.Agents.Defaults.Model,
+			cfg.Agents.Defaults.MaxToolIterations,
+			cfg.Tools.Web.Search.APIKey,
+			agent.BuildWebFetchOptions(cfg),
+			cfg.Tools.Exec,
+			cfg.Tools.RestrictToWorkspace,
+			cronService,
+		)
+
+		// 创建频道注册表
+		channelRegistry := channels.NewRegistry()
+
+		// 注册 Telegram
+		if cfg.Channels.Telegram.Enabled {
+			tgChannel := channels.NewTelegramChannel(&channels.TelegramConfig{
+				Token:   cfg.Channels.Telegram.Token,
+				Enabled: cfg.Channels.Telegram.Enabled,
+			})
+			tgChannel.SetMessageHandler(func(msg *channels.Message) {
+				// 转发到消息总线
+				inboundMsg := bus.NewInboundMessage("telegram", msg.Sender, msg.ChatID, msg.Text)
+				messageBus.PublishInbound(inboundMsg)
+			})
+			channelRegistry.Register(tgChannel)
+		}
+
+		// 注册 Discord
+		if cfg.Channels.Discord.Enabled {
+			dcChannel := channels.NewDiscordChannel(&channels.DiscordConfig{
+				Token:     cfg.Channels.Discord.Token,
+				Enabled:   cfg.Channels.Discord.Enabled,
+				AllowFrom: cfg.Channels.Discord.AllowFrom,
+			})
+			dcChannel.SetMessageHandler(func(msg *channels.Message) {
+				inboundMsg := bus.NewInboundMessage("discord", msg.Sender, msg.ChatID, msg.Text)
+				messageBus.PublishInbound(inboundMsg)
+			})
+			channelRegistry.Register(dcChannel)
+		}
+
+		// 注册 WhatsApp (Bridge)
+		if cfg.Channels.WhatsApp.Enabled {
+			waChannel := channels.NewWhatsAppChannel(&channels.WhatsAppConfig{
+				Enabled:   cfg.Channels.WhatsApp.Enabled,
+				BridgeURL: cfg.Channels.WhatsApp.BridgeURL,
+				AllowFrom: cfg.Channels.WhatsApp.AllowFrom,
+				AllowSelf: cfg.Channels.WhatsApp.AllowSelf,
+			})
+			waChannel.SetMessageHandler(func(msg *channels.Message) {
+				inboundMsg := bus.NewInboundMessage("whatsapp", msg.Sender, msg.ChatID, msg.Text)
+				messageBus.PublishInbound(inboundMsg)
+			})
+			channelRegistry.Register(waChannel)
+		}
+
+		// 注册 WebSocket
+		if cfg.Channels.WebSocket.Enabled {
+			wsChannel := channels.NewWebSocketChannel(&channels.WebSocketConfig{
+				Enabled:      cfg.Channels.WebSocket.Enabled,
+				Host:         cfg.Channels.WebSocket.Host,
+				Port:         cfg.Channels.WebSocket.Port,
+				Path:         cfg.Channels.WebSocket.Path,
+				AllowOrigins: cfg.Channels.WebSocket.AllowOrigins,
+			})
+			wsChannel.SetMessageHandler(func(msg *channels.Message) {
+				inboundMsg := bus.NewInboundMessage("websocket", msg.Sender, msg.ChatID, msg.Text)
+				messageBus.PublishInbound(inboundMsg)
+			})
+			channelRegistry.Register(wsChannel)
+		}
+
+		// 检查启用的频道
+		enabledChannels := []string{}
+		for _, ch := range channelRegistry.GetEnabled() {
+			enabledChannels = append(enabledChannels, ch.Name())
+		}
+
+		if len(enabledChannels) > 0 {
+			fmt.Printf("✓ Channels enabled: %v\n", enabledChannels)
+			if lg := logging.Get(); lg != nil && lg.Gateway != nil {
+				lg.Gateway.Printf("channels enabled: %v", enabledChannels)
+			}
+		} else {
+			fmt.Println("⚠ Warning: No channels enabled")
+			if lg := logging.Get(); lg != nil && lg.Gateway != nil {
+				lg.Gateway.Printf("warning: no channels enabled")
+			}
+		}
+
+		// 显示 Cron 状态
+		cronStatus := cronService.Status()
+		fmt.Printf("✓ Cron jobs: %d total, %d enabled\n", cronStatus["totalJobs"], cronStatus["enabledJobs"])
+		if lg := logging.Get(); lg != nil && lg.Gateway != nil {
+			lg.Gateway.Printf("cron jobs total=%v enabled=%v", cronStatus["totalJobs"], cronStatus["enabledJobs"])
+		}
+
+		// 启动所有服务
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+
+		// 启动 Web UI/API 服务器
+		webServer := webui.NewServer(cfg, agentLoop, cronService, channelRegistry)
+		go func() {
+			if err := webServer.Start(ctx, cfg.Gateway.Host, gatewayPort); err != nil && err != context.Canceled {
+				fmt.Printf("⚠ Web UI server error: %v\n", err)
+				if lg := logging.Get(); lg != nil && lg.Web != nil {
+					lg.Web.Printf("webui error: %v", err)
+				}
+			}
+		}()
+
+		fmt.Println("✓ Gateway ready")
+		fmt.Println("\nPress Ctrl+C to stop")
+
+		// 启动频道
+		for _, ch := range channelRegistry.GetEnabled() {
+			if err := ch.Start(ctx); err != nil {
+				fmt.Printf("⚠ Failed to start %s channel: %v\n", ch.Name(), err)
+				if lg := logging.Get(); lg != nil && lg.Channels != nil {
+					lg.Channels.Printf("start channel=%s error=%v", ch.Name(), err)
+				}
+			}
+		}
+
+		// 启动 Cron 服务
+		if err := cronService.Start(); err != nil {
+			fmt.Printf("⚠ Failed to start cron service: %v\n", err)
+			if lg := logging.Get(); lg != nil && lg.Cron != nil {
+				lg.Cron.Printf("cron start error: %v", err)
+			}
+		}
+
+		// 启动出站消息处理器
+		go handleOutboundMessages(ctx, messageBus, channelRegistry)
+
+		// 处理 Ctrl+C
+		sigChan := make(chan os.Signal, 1)
+		signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+		go func() {
+			<-sigChan
+			fmt.Println("\nShutting down...")
+			cancel()
+		}()
+
+		// 运行 Agent
+		if err := agentLoop.Run(ctx); err != nil && err != context.Canceled {
+			if lg := logging.Get(); lg != nil && lg.Gateway != nil {
+				lg.Gateway.Printf("agent loop error: %v", err)
+			}
+			return fmt.Errorf("agent error: %w", err)
+		}
+
+		// 停止所有服务
+		cronService.Stop()
+		for _, ch := range channelRegistry.GetAll() {
+			ch.Stop()
+		}
+
+		if lg := logging.Get(); lg != nil && lg.Gateway != nil {
+			lg.Gateway.Printf("gateway shutdown")
+		}
+
+		return nil
+	},
+}
+
+// handleOutboundMessages 处理出站消息
+func handleOutboundMessages(ctx context.Context, bus *bus.MessageBus, registry *channels.Registry) {
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		default:
+		}
+
+		msg, err := bus.ConsumeOutbound(ctx)
+		if err != nil {
+			if err == context.Canceled {
+				return
+			}
+			continue
+		}
+
+		// 根据频道发送消息
+		if msg.Channel != "" {
+			if ch, ok := registry.Get(msg.Channel); ok {
+				ch.SendMessage(msg.ChatID, msg.Content)
+			}
+		}
+	}
+}

@@ -1,0 +1,21 @@
+# Build artifacts
+/build/
+/nanobot
+/nanobot-go
+*.exe
+*.out
+
+# Logs and runtime state
+/.logs/
+/.pids/
+*.log
+
+# Node / frontend
+**/node_modules/
+**/dist/
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>nanobot — ultra-lightweight AI assistant</title>
+    <meta
+      name="description"
+      content="nanobot is a lightweight, tool-augmented AI assistant built for personal automation."
+    />
+    <link
+      rel="preload"
+      href="fonts/sora-latin-400-normal.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="fonts/fraunces-latin-600-normal.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="bg"></div>
+    <header class="nav">
+      <div class="logo">nanobot</div>
+      <nav>
+        <a href="#features" data-i18n="nav_features">Features</a>
+        <a href="#workflow" data-i18n="nav_workflow">Workflow</a>
+        <a href="#quickstart" data-i18n="nav_quickstart">Quickstart</a>
+        <a class="cta" href="https://github.com/HKUDS/nanobot" data-i18n="nav_github">GitHub</a>
+        <button class="lang-toggle" id="lang-toggle" type="button">中文</button>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="hero-text">
+          <p class="eyebrow" data-i18n="hero_eyebrow">Personal automation, distilled.</p>
+          <h1>
+            <span data-i18n="hero_title_line1">A tiny AI assistant</span>
+            <span data-i18n="hero_title_line2">that actually ships.</span>
+          </h1>
+          <p class="lead" data-i18n="hero_lead">
+            nanobot is a Go-first, tool-augmented agent that stays close to your
+            workspace. Fast loops, clear logs, and channels that fit your flow.
+          </p>
+          <div class="hero-actions">
+            <a class="button primary" href="#quickstart" data-i18n="hero_cta_start">Get started</a>
+            <a class="button ghost" href="https://github.com/HKUDS/nanobot" data-i18n="hero_cta_github">
+              View GitHub
+            </a>
+          </div>
+          <div class="meta">
+            <span data-i18n="hero_meta_channels">Channels: Telegram, WhatsApp, Discord, WebSocket</span>
+            <span data-i18n="hero_meta_tools">Tools: Shell, Files, Web search</span>
+          </div>
+        </div>
+        <div class="hero-card">
+          <div class="card-header" data-i18n="card_header">Live status</div>
+          <div class="card-row">
+            <span data-i18n="card_workspace">Workspace</span>
+            <strong>~/workspace</strong>
+          </div>
+          <div class="card-row">
+            <span data-i18n="card_model">Model</span>
+            <strong>OpenAI-compatible</strong>
+          </div>
+          <div class="card-row">
+            <span data-i18n="card_active">Active</span>
+            <strong>Gateway + Bridge</strong>
+          </div>
+          <div class="card-terminal">
+            <code>$ ./nanobot gateway</code>
+            <code>✓ Channels enabled: [telegram whatsapp websocket]</code>
+          </div>
+        </div>
+      </section>
+
+      <section id="features" class="section">
+        <h2 data-i18n="features_title">Why nanobot</h2>
+        <div class="feature-grid">
+          <div class="feature">
+            <h3 data-i18n="feature1_title">Tool-native by default</h3>
+            <p data-i18n="feature1_body">
+              Shell, file system, and web access are first-class tools. You get
+              real execution rather than hallucinated output.
+            </p>
+          </div>
+          <div class="feature">
+            <h3 data-i18n="feature2_title">Channel-first routing</h3>
+            <p data-i18n="feature2_body">
+              Bring the assistant to Telegram, WhatsApp (Bridge), Discord, and
+              WebSocket clients with a unified message bus.
+            </p>
+          </div>
+          <div class="feature">
+            <h3 data-i18n="feature3_title">Simple, inspectable state</h3>
+            <p data-i18n="feature3_body">
+              Sessions live in JSON on disk. Cron jobs are plain files. Every
+              action is easy to trace and debug.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section id="workflow" class="section split">
+        <div>
+          <h2 data-i18n="workflow_title">Designed for operators</h2>
+          <p data-i18n="workflow_body">
+            nanobot keeps runtime concerns visible: tool execution logs, session
+            history, and workspace boundaries are always explicit.
+          </p>
+          <ul>
+            <li data-i18n="workflow_item1">Fast CLI loop for local execution</li>
+            <li data-i18n="workflow_item2">Gateway mode for always-on assistants</li>
+            <li data-i18n="workflow_item3">Web UI for status, sessions, and config</li>
+          </ul>
+        </div>
+        <div class="stack">
+          <div class="stack-card" data-i18n="stack_card1">Web UI / API</div>
+          <div class="stack-card" data-i18n="stack_card2">Message Bus</div>
+          <div class="stack-card" data-i18n="stack_card3">Tool Runner</div>
+          <div class="stack-card" data-i18n="stack_card4">Workspace Store</div>
+        </div>
+      </section>
+
+      <section id="quickstart" class="section quickstart">
+        <h2 data-i18n="quickstart_title">Quickstart</h2>
+        <div class="code">
+          <code>git clone https://github.com/HKUDS/nanobot.git</code>
+          <code>cd nanobot/nanobot-go</code>
+          <code>make build</code>
+          <code>./build/nanobot-go gateway</code>
+        </div>
+        <div class="note" data-i18n="quickstart_note">
+          Want WhatsApp? Run the Bridge (Baileys) and scan the QR code. The
+          `make bridge` target handles install/build/run in one command.
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <p data-i18n="footer_tagline">nanobot — lightweight, extensible, and built for clarity.</p>
+      <a href="https://github.com/HKUDS/nanobot" data-i18n="footer_github">GitHub</a>
+    </footer>
+
+    <script>
+      const translations = {
+        en: {
+          nav_features: 'Features',
+          nav_workflow: 'Workflow',
+          nav_quickstart: 'Quickstart',
+          nav_github: 'GitHub',
+          hero_eyebrow: 'Personal automation, distilled.',
+          hero_title_line1: 'A tiny AI assistant',
+          hero_title_line2: 'that actually ships.',
+          hero_lead:
+            'nanobot is a Go-first, tool-augmented agent that stays close to your workspace. Fast loops, clear logs, and channels that fit your flow.',
+          hero_cta_start: 'Get started',
+          hero_cta_github: 'View GitHub',
+          hero_meta_channels: 'Channels: Telegram, WhatsApp, Discord, WebSocket',
+          hero_meta_tools: 'Tools: Shell, Files, Web search',
+          card_header: 'Live status',
+          card_workspace: 'Workspace',
+          card_model: 'Model',
+          card_active: 'Active',
+          features_title: 'Why nanobot',
+          feature1_title: 'Tool-native by default',
+          feature1_body:
+            'Shell, file system, and web access are first-class tools. You get real execution rather than hallucinated output.',
+          feature2_title: 'Channel-first routing',
+          feature2_body:
+            'Bring the assistant to Telegram, WhatsApp (Bridge), Discord, and WebSocket clients with a unified message bus.',
+          feature3_title: 'Simple, inspectable state',
+          feature3_body:
+            'Sessions live in JSON on disk. Cron jobs are plain files. Every action is easy to trace and debug.',
+          workflow_title: 'Designed for operators',
+          workflow_body:
+            'nanobot keeps runtime concerns visible: tool execution logs, session history, and workspace boundaries are always explicit.',
+          workflow_item1: 'Fast CLI loop for local execution',
+          workflow_item2: 'Gateway mode for always-on assistants',
+          workflow_item3: 'Web UI for status, sessions, and config',
+          stack_card1: 'Web UI / API',
+          stack_card2: 'Message Bus',
+          stack_card3: 'Tool Runner',
+          stack_card4: 'Workspace Store',
+          quickstart_title: 'Quickstart',
+          quickstart_note:
+            'Want WhatsApp? Run the Bridge (Baileys) and scan the QR code. The `make bridge` target handles install/build/run in one command.',
+          footer_tagline: 'nanobot — lightweight, extensible, and built for clarity.',
+          footer_github: 'GitHub',
+        },
+        zh: {
+          nav_features: '特性',
+          nav_workflow: '流程',
+          nav_quickstart: '快速开始',
+          nav_github: 'GitHub',
+          hero_eyebrow: '个人自动化，提炼到极简。',
+          hero_title_line1: '一个小而强的 AI 助手',
+          hero_title_line2: '专注把事做成。',
+          hero_lead:
+            'nanobot 是 Go 优先的工具增强型智能体，贴近你的工作区。快速循环、清晰日志、顺手的多渠道接入。',
+          hero_cta_start: '立即开始',
+          hero_cta_github: '查看 GitHub',
+          hero_meta_channels: '渠道：Telegram、WhatsApp、Discord、WebSocket',
+          hero_meta_tools: '工具：Shell、文件、网页搜索',
+          card_header: '实时状态',
+          card_workspace: '工作区',
+          card_model: '模型',
+          card_active: '运行中',
+          features_title: '为什么选择 nanobot',
+          feature1_title: '工具原生',
+          feature1_body:
+            'Shell、文件系统与 Web 访问是第一优先级工具。真正执行，而不是臆测结果。',
+          feature2_title: '渠道优先',
+          feature2_body:
+            '通过统一消息总线，把助手接入 Telegram、WhatsApp（Bridge）、Discord 与 WebSocket。',
+          feature3_title: '可检查的状态',
+          feature3_body:
+            '会话以 JSON 落盘，Cron 任务是明文文件，所有动作都易于追踪与排错。',
+          workflow_title: '为操作者而生',
+          workflow_body:
+            'nanobot 把运行细节保持可见：工具执行日志、会话历史与工作区边界一目了然。',
+          workflow_item1: '本地快速 CLI 循环',
+          workflow_item2: 'Gateway 常驻模式',
+          workflow_item3: 'Web UI 查看状态、会话与配置',
+          stack_card1: 'Web UI / API',
+          stack_card2: '消息总线',
+          stack_card3: '工具执行器',
+          stack_card4: '工作区存储',
+          quickstart_title: '快速开始',
+          quickstart_note:
+            '需要 WhatsApp？启动 Bridge（Baileys）并扫码登录。`make bridge` 一条命令完成安装/构建/运行。',
+          footer_tagline: 'nanobot —— 轻量、可扩展、为清晰而生。',
+          footer_github: 'GitHub',
+        },
+      };
+
+      const toggle = document.getElementById('lang-toggle');
+      const stored = localStorage.getItem('nanobot_lang');
+      const initial =
+        stored === 'en' || stored === 'zh'
+          ? stored
+          : navigator.language.toLowerCase().startsWith('zh')
+            ? 'zh'
+            : 'en';
+
+      function applyLang(lang) {
+        document.documentElement.lang = lang;
+        const dict = translations[lang] || translations.en;
+        document.querySelectorAll('[data-i18n]').forEach((el) => {
+          const key = el.getAttribute('data-i18n');
+          if (key && dict[key]) {
+            el.textContent = dict[key];
+          }
+        });
+        if (toggle) {
+          toggle.textContent = lang === 'en' ? '中文' : 'EN';
+        }
+        localStorage.setItem('nanobot_lang', lang);
+      }
+
+      if (toggle) {
+        toggle.addEventListener('click', () => {
+          const current = localStorage.getItem('nanobot_lang') || initial;
+          applyLang(current === 'en' ? 'zh' : 'en');
+        });
+      }
+
+      applyLang(initial);
+    </script>
+  </body>
+</html>

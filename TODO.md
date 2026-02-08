@@ -1,0 +1,16 @@
+# TODO
+- [x] 除了 telegram 和 whatsapp，增加 websocket 信道接收和返回信息
+- [x] 做一个简单的 webUI ，建议使用现代的 React 、radixui 的技术栈，webUI 可以展示当前 nanobot 的状态、发送消息查看消息、查看历史 session、设置workspace 、设置配置等
+- [x] 将 go mod 目录改成 github.com/Lichas/nanobot-go  之前是乱写的，所以整个 go 目录你得调整一下代码
+- [x] 做一个漂亮现代化的静态官网，放置在 homepage 目录，介绍这个产品 、有 GitHub 链接
+- [x] Add native providers for non-OpenAI-compatible APIs (Anthropic, Gemini, Groq), or document that these must be routed via an OpenAI-compatible gateway.
+- [x] Implement Discord inbound message handling (Gateway WebSocket or a library like discordgo) and wire it into the message bus.
+- [x] Enforce workspace sandboxing for the exec tool when `restrictToWorkspace` is enabled (block path escapes, validate working dir, and restrict filesystem access).
+- [ ] 更新 claude md 或者 agents md ，我希望以后其他 codex claude code 都遵守，修改 新增什么功能，自己去验证一下正确性，不要再询问，对结果负责；如果有 bug 修复，记录到 bugfix md 。并开始遵循
+- [ ]更新 .gitignore  ，不要 .logs日志目录  不要二进制文件、不要 mac 隐藏目录 不要./nanobot
+- [ ] 新功能 ～/.nanobot/logs 目录用几个文件开始追踪记录网关日志、 session 日志、tools 日志等等，你再想想有哪些日志文件要记录
+- [ ] 似乎还是不会回复我手机whatsapp  发送的hello 信息，请你基于日志好好查一下。 webUI 似乎也看不到来自whatsapp channel的消息
+- [ ] write restart dameon scipt, 优雅、安全重启 daemon 服务，确保 whatsapp  telegram 重启后可以正常工作
+- [ ] 总结项目最新特性、架构，书写 中文 英文友好的 git 项目 readme ，可以鼠标点击切换
+- [ ] homepage 官网 和 webUI 支持国际化
+- [ ] 将仓库推送到 https://github.com/Lichas/nanobot-go

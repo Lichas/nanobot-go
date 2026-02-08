@@ -1,0 +1,393 @@
+# nanobot-go
+
+轻量级的个人 AI 助手框架（Go）。支持多渠道消息、工具调用、Web UI、定时任务与可选浏览器抓取。
+
+<details open>
+<summary>中文</summary>
+
+## 亮点
+- Go 原生实现的 Agent Loop 与工具系统
+- 多渠道接入：Telegram、WhatsApp（Bridge）、Discord、WebSocket
+- Web UI + API（同一端口，打包后静态托管）
+- 定时任务（Cron/Once/Every）
+- 可选浏览器抓取（Node + Playwright）
+- 完整日志：`~/.nanobot/logs`
+
+## 快速开始
+1. 安装依赖：Go 1.21+，Node.js 18+
+2. 构建：`make build`
+3. 初始化：`./build/nanobot-go onboard`
+4. 配置：编辑 `~/.nanobot/config.json`
+5. 启动：`./build/nanobot-go gateway`
+
+## 配置文件
+路径：`~/.nanobot/config.json`
+
+最小示例：
+```json
+{
+  "providers": {
+    "openrouter": { "apiKey": "your-api-key" }
+  },
+  "agents": {
+    "defaults": {
+      "model": "anthropic/claude-opus-4-5",
+      "workspace": "/absolute/path/to/your/workspace"
+    }
+  }
+}
+```
+
+### Workspace 设置
+默认工作区：`~/.nanobot/workspace`
+
+建议使用绝对路径，也支持 `~` 或 `$HOME` 自动展开：
+```json
+{
+  "agents": {
+    "defaults": {
+      "workspace": "~/nanobot-workspace"
+    }
+  }
+}
+```
+
+限制文件/命令只能在工作区内执行：
+```json
+{
+  "tools": {
+    "restrictToWorkspace": true
+  }
+}
+```
+
+## Web UI
+Web UI 与 API 同端口，默认 `18890`：
+
+1. 构建：`make webui-install && make webui-build`
+2. 启动：`./build/nanobot-go gateway`
+3. 访问：`http://localhost:18890`
+
+如果访问显示 `Web UI not built`，请先运行 `make webui-build`。
+
+## WhatsApp（Bridge）
+WhatsApp 通过 `bridge/`（Baileys）接入，Go 侧通过 WebSocket 连接 Bridge。
+
+1. 构建 Bridge：`make bridge-install && make bridge-build`
+2. 启动 Bridge：`BRIDGE_PORT=3001 make bridge-run`
+3. 绑定（命令行扫码）：
+```bash
+./build/nanobot-go whatsapp bind --bridge ws://localhost:3001
+```
+4. Web UI：状态页显示二维码
+
+代理（部分地区需要）：
+- 设置 `BRIDGE_PROXY` 或 `PROXY_URL/HTTP_PROXY/HTTPS_PROXY/ALL_PROXY`
+
+如果使用个人 WhatsApp 账号，希望手机发消息也触发机器人回复：
+```json
+{
+  "channels": {
+    "whatsapp": {
+      "enabled": true,
+      "bridgeUrl": "ws://localhost:3001",
+      "allowSelf": true
+    }
+  }
+}
+```
+
+## Telegram
+1. 使用 @BotFather 创建 Bot，获取 Token
+2. 绑定（命令行输出 QR）：
+```bash
+./build/nanobot-go telegram bind --token "123456:AA..."
+```
+3. Web UI：状态页显示打开聊天的二维码
+
+## 频道配置示例
+```json
+{
+  "channels": {
+    "telegram": {
+      "enabled": true,
+      "token": "your-bot-token",
+      "allowFrom": []
+    },
+    "discord": {
+      "enabled": true,
+      "token": "your-discord-token",
+      "allowFrom": []
+    },
+    "whatsapp": {
+      "enabled": true,
+      "bridgeUrl": "ws://localhost:3001",
+      "allowFrom": [],
+      "allowSelf": false
+    },
+    "websocket": {
+      "enabled": false,
+      "host": "0.0.0.0",
+      "port": 18791,
+      "path": "/ws",
+      "allowOrigins": []
+    }
+  }
+}
+```
+
+## Web Fetch（浏览器模式）
+适合需要真实浏览器行为的站点：
+```json
+{
+  "tools": {
+    "web": {
+      "fetch": {
+        "mode": "browser",
+        "scriptPath": "/absolute/path/to/nanobot-go/webfetcher/fetch.mjs",
+        "nodePath": "node",
+        "timeout": 30,
+        "waitUntil": "domcontentloaded"
+      }
+    }
+  }
+}
+```
+安装 Playwright：`make webfetch-install`
+
+## 一键启动
+前台启动（Bridge + Gateway）：
+```bash
+make up
+```
+
+后台常驻：
+```bash
+make up-daemon
+```
+
+重启：
+```bash
+make restart-daemon
+```
+
+停止后台服务：
+```bash
+make down-daemon
+```
+
+可用环境变量：
+- `BRIDGE_PORT`（默认 `3001`）
+- `GATEWAY_PORT`（默认 `18890`）
+- `BRIDGE_PROXY`（代理）
+
+## 日志
+日志目录：`~/.nanobot/logs`
+
+文件包括：
+- `gateway.log`
+- `session.log`
+- `tools.log`
+- `channels.log`
+- `cron.log`
+- `webui.log`
+
+## 架构说明
+详见 `ARCHITECTURE.md`。
+
+</details>
+
+<details>
+<summary>English</summary>
+
+## Highlights
+- Go-native agent loop and tool system
+- Multi-channel: Telegram, WhatsApp (Bridge), Discord, WebSocket
+- Web UI + API on the same port (static bundle served by gateway)
+- Cron/Once/Every scheduler
+- Optional browser fetch (Node + Playwright)
+- Structured logs in `~/.nanobot/logs`
+
+## Quick Start
+1. Install Go 1.21+ and Node.js 18+
+2. Build: `make build`
+3. Init: `./build/nanobot-go onboard`
+4. Configure: edit `~/.nanobot/config.json`
+5. Run: `./build/nanobot-go gateway`
+
+## Config File
+Path: `~/.nanobot/config.json`
+
+Minimal example:
+```json
+{
+  "providers": {
+    "openrouter": { "apiKey": "your-api-key" }
+  },
+  "agents": {
+    "defaults": {
+      "model": "anthropic/claude-opus-4-5",
+      "workspace": "/absolute/path/to/your/workspace"
+    }
+  }
+}
+```
+
+### Workspace
+Default workspace: `~/.nanobot/workspace`
+
+Absolute paths are recommended; `~` and `$HOME` are expanded automatically:
+```json
+{
+  "agents": {
+    "defaults": {
+      "workspace": "~/nanobot-workspace"
+    }
+  }
+}
+```
+
+Restrict tools to workspace only:
+```json
+{
+  "tools": {
+    "restrictToWorkspace": true
+  }
+}
+```
+
+## Web UI
+Web UI and API share the same port (default `18890`).
+
+1. Build: `make webui-install && make webui-build`
+2. Run: `./build/nanobot-go gateway`
+3. Visit: `http://localhost:18890`
+
+If you see `Web UI not built`, run `make webui-build` first.
+
+## WhatsApp (Bridge)
+WhatsApp is connected via a Node.js Bridge (Baileys) and a WebSocket link to Go.
+
+1. Build Bridge: `make bridge-install && make bridge-build`
+2. Run Bridge: `BRIDGE_PORT=3001 make bridge-run`
+3. Bind (CLI QR):
+```bash
+./build/nanobot-go whatsapp bind --bridge ws://localhost:3001
+```
+4. Web UI shows QR on the status page
+
+Proxy (for restricted regions):
+- Set `BRIDGE_PROXY` or `PROXY_URL/HTTP_PROXY/HTTPS_PROXY/ALL_PROXY`
+
+If you use a personal WhatsApp account and want phone messages to trigger replies:
+```json
+{
+  "channels": {
+    "whatsapp": {
+      "enabled": true,
+      "bridgeUrl": "ws://localhost:3001",
+      "allowSelf": true
+    }
+  }
+}
+```
+
+## Telegram
+1. Create a bot with @BotFather and get the token
+2. Bind (CLI outputs QR):
+```bash
+./build/nanobot-go telegram bind --token "123456:AA..."
+```
+3. Web UI shows a QR that opens the bot chat
+
+## Channel Config Example
+```json
+{
+  "channels": {
+    "telegram": {
+      "enabled": true,
+      "token": "your-bot-token",
+      "allowFrom": []
+    },
+    "discord": {
+      "enabled": true,
+      "token": "your-discord-token",
+      "allowFrom": []
+    },
+    "whatsapp": {
+      "enabled": true,
+      "bridgeUrl": "ws://localhost:3001",
+      "allowFrom": [],
+      "allowSelf": false
+    },
+    "websocket": {
+      "enabled": false,
+      "host": "0.0.0.0",
+      "port": 18791,
+      "path": "/ws",
+      "allowOrigins": []
+    }
+  }
+}
+```
+
+## Web Fetch (Browser Mode)
+For sites that need real browser behavior:
+```json
+{
+  "tools": {
+    "web": {
+      "fetch": {
+        "mode": "browser",
+        "scriptPath": "/absolute/path/to/nanobot-go/webfetcher/fetch.mjs",
+        "nodePath": "node",
+        "timeout": 30,
+        "waitUntil": "domcontentloaded"
+      }
+    }
+  }
+}
+```
+Install Playwright: `make webfetch-install`
+
+## One-Command Start
+Foreground (Bridge + Gateway):
+```bash
+make up
+```
+
+Background daemon:
+```bash
+make up-daemon
+```
+
+Restart:
+```bash
+make restart-daemon
+```
+
+Stop background:
+```bash
+make down-daemon
+```
+
+Env vars:
+- `BRIDGE_PORT` (default `3001`)
+- `GATEWAY_PORT` (default `18890`)
+- `BRIDGE_PROXY` (proxy)
+
+## Logs
+Logs directory: `~/.nanobot/logs`
+
+Files:
+- `gateway.log`
+- `session.log`
+- `tools.log`
+- `channels.log`
+- `cron.log`
+- `webui.log`
+
+## Architecture
+See `ARCHITECTURE.md` for details.
+
+</details>
