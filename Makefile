@@ -51,10 +51,10 @@ webfetch-install:
 	cd $(WEBFETCH_DIR) && npm install
 
 up:
-	FORCE_BRIDGE_KILL=1 ./scripts/start_all.sh
+	FORCE_BRIDGE_KILL=1 FORCE_GATEWAY_KILL=1 ./scripts/start_all.sh
 
 up-daemon:
-	FORCE_BRIDGE_KILL=1 ./scripts/start_daemon.sh
+	FORCE_BRIDGE_KILL=1 FORCE_GATEWAY_KILL=1 ./scripts/start_daemon.sh
 
 down-daemon:
 	./scripts/stop_daemon.sh

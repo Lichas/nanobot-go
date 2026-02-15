@@ -8,6 +8,7 @@ BRIDGE_PORT="${BRIDGE_PORT:-3001}"
 GATEWAY_PORT="${GATEWAY_PORT:-18890}"
 BRIDGE_PROXY="${BRIDGE_PROXY:-}"
 FORCE_BRIDGE_KILL="${FORCE_BRIDGE_KILL:-}"
+FORCE_GATEWAY_KILL="${FORCE_GATEWAY_KILL:-}"
 
 mkdir -p "$PID_DIR" "$LOG_DIR"
 
@@ -59,6 +60,24 @@ bridge_port_pids() {
   fi
 }
 
+read_pid_file() {
+  local file="$1"
+  if [ ! -f "$file" ]; then
+    return 1
+  fi
+  local pid
+  pid="$(cat "$file" 2>/dev/null || true)"
+  if ! [[ "$pid" =~ ^[0-9]+$ ]]; then
+    return 1
+  fi
+  printf "%s" "$pid"
+}
+
+is_pid_running() {
+  local pid="$1"
+  kill -0 "$pid" >/dev/null 2>&1
+}
+
 should_kill_pid() {
   local pid="$1"
   local cmd
@@ -73,6 +92,24 @@ should_kill_pid() {
     *"/bridge/dist/index.js"*) return 0 ;;
     *"nanobot-whatsapp-bridge"*) return 0 ;;
     *"node dist/index.js"*"/bridge"*) return 0 ;;
+  esac
+  return 1
+}
+
+should_kill_gateway_pid() {
+  local pid="$1"
+  local cmd
+  cmd="$(ps -p "$pid" -o command= 2>/dev/null || true)"
+  if [ -z "$cmd" ]; then
+    return 1
+  fi
+  if [ -n "$FORCE_GATEWAY_KILL" ]; then
+    return 0
+  fi
+  case "$cmd" in
+    *"/nanobot-go gateway"*) return 0 ;;
+    *"/build/nanobot-go gateway"*) return 0 ;;
+    *"nanobot-go gateway -p"*) return 0 ;;
   esac
   return 1
 }
@@ -98,9 +135,39 @@ stop_existing_bridge() {
   fi
 }
 
-if [ -f "$PID_DIR/bridge.pid" ] && kill -0 "$(cat "$PID_DIR/bridge.pid")" >/dev/null 2>&1; then
-  echo "Bridge already running (PID $(cat "$PID_DIR/bridge.pid"))."
-else
+stop_existing_gateway() {
+  local pids
+  pids="$(bridge_port_pids "$GATEWAY_PORT" || true)"
+  if [ -z "$pids" ]; then
+    return 0
+  fi
+  for pid in $pids; do
+    if should_kill_gateway_pid "$pid"; then
+      echo "Stopping existing gateway on port $GATEWAY_PORT (PID $pid)"
+      kill "$pid" >/dev/null 2>&1 || true
+    fi
+  done
+  sleep 0.3
+  pids="$(bridge_port_pids "$GATEWAY_PORT" || true)"
+  if [ -n "$pids" ]; then
+    echo "Error: port $GATEWAY_PORT is still in use (PID(s) $pids)."
+    echo "Set GATEWAY_PORT to use a different port, or stop the process manually."
+    exit 1
+  fi
+}
+
+bridge_pid="$(read_pid_file "$PID_DIR/bridge.pid" || true)"
+if [ -n "$bridge_pid" ] && is_pid_running "$bridge_pid"; then
+  if [ -n "$FORCE_BRIDGE_KILL" ]; then
+    echo "Stopping existing bridge from PID file (PID $bridge_pid)"
+    kill "$bridge_pid" >/dev/null 2>&1 || true
+  else
+    echo "Bridge already running (PID $bridge_pid)."
+  fi
+fi
+
+bridge_pid="$(read_pid_file "$PID_DIR/bridge.pid" || true)"
+if [ -z "$bridge_pid" ] || ! is_pid_running "$bridge_pid"; then
   stop_existing_bridge
   echo "==> Starting WhatsApp bridge on port $BRIDGE_PORT"
   make bridge-install >/dev/null
@@ -115,9 +182,19 @@ else
   echo "Bridge PID: $(cat "$PID_DIR/bridge.pid")"
 fi
 
-if [ -f "$PID_DIR/gateway.pid" ] && kill -0 "$(cat "$PID_DIR/gateway.pid")" >/dev/null 2>&1; then
-  echo "Gateway already running (PID $(cat "$PID_DIR/gateway.pid"))."
-else
+gateway_pid="$(read_pid_file "$PID_DIR/gateway.pid" || true)"
+if [ -n "$gateway_pid" ] && is_pid_running "$gateway_pid"; then
+  if [ -n "$FORCE_GATEWAY_KILL" ]; then
+    echo "Stopping existing gateway from PID file (PID $gateway_pid)"
+    kill "$gateway_pid" >/dev/null 2>&1 || true
+  else
+    echo "Gateway already running (PID $gateway_pid)."
+  fi
+fi
+
+gateway_pid="$(read_pid_file "$PID_DIR/gateway.pid" || true)"
+if [ -z "$gateway_pid" ] || ! is_pid_running "$gateway_pid"; then
+  stop_existing_gateway
   echo "==> Building nanobot"
   make build >/dev/null
 

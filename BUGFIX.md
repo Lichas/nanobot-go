@@ -238,3 +238,13 @@ go test ./pkg/tools/... -v
 **验证**：
 - `api/status` 显示 `channels` 包含 `telegram` 且状态为 `ready`。
 - Telegram 入站消息可被消费，不再堆积在 `getUpdates` pending 队列中。
+
+## 2026-02-16 - `make up-daemon` 未清理旧 Gateway 进程
+
+**问题**：`make up-daemon` 仅强制清理 Bridge 端口，Gateway 端口被旧进程占用时可能出现僵持或启动失败。  
+**原因**：启动脚本只实现了 `FORCE_BRIDGE_KILL`，缺少 `GATEWAY_PORT` 清理逻辑。  
+**修复**：
+- 在 `start_daemon.sh` 和 `start_all.sh` 增加 `FORCE_GATEWAY_KILL` 与 Gateway 端口清理。
+- `make up` / `make up-daemon` 默认同时启用 `FORCE_BRIDGE_KILL=1` 和 `FORCE_GATEWAY_KILL=1`。  
+**验证**：
+- 先用测试进程占用 `18890`，执行 `make up-daemon` 后占用进程被清理并成功拉起 Gateway。

@@ -3,8 +3,10 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 BRIDGE_PORT="${BRIDGE_PORT:-3001}"
+GATEWAY_PORT="${GATEWAY_PORT:-18890}"
 BRIDGE_PROXY="${BRIDGE_PROXY:-}"
 FORCE_BRIDGE_KILL="${FORCE_BRIDGE_KILL:-}"
+FORCE_GATEWAY_KILL="${FORCE_GATEWAY_KILL:-}"
 
 cd "$ROOT_DIR"
 
@@ -83,6 +85,24 @@ should_kill_pid() {
   return 1
 }
 
+should_kill_gateway_pid() {
+  local pid="$1"
+  local cmd
+  cmd="$(ps -p "$pid" -o command= 2>/dev/null || true)"
+  if [ -z "$cmd" ]; then
+    return 1
+  fi
+  if [ -n "$FORCE_GATEWAY_KILL" ]; then
+    return 0
+  fi
+  case "$cmd" in
+    *"/nanobot-go gateway"*) return 0 ;;
+    *"/build/nanobot-go gateway"*) return 0 ;;
+    *"nanobot-go gateway -p"*) return 0 ;;
+  esac
+  return 1
+}
+
 stop_existing_bridge() {
   local pids
   pids="$(bridge_port_pids "$BRIDGE_PORT" || true)"
@@ -104,8 +124,30 @@ stop_existing_bridge() {
   fi
 }
 
+stop_existing_gateway() {
+  local pids
+  pids="$(bridge_port_pids "$GATEWAY_PORT" || true)"
+  if [ -z "$pids" ]; then
+    return 0
+  fi
+  for pid in $pids; do
+    if should_kill_gateway_pid "$pid"; then
+      echo "==> Stopping existing gateway on port $GATEWAY_PORT (PID $pid)"
+      kill "$pid" >/dev/null 2>&1 || true
+    fi
+  done
+  sleep 0.3
+  pids="$(bridge_port_pids "$GATEWAY_PORT" || true)"
+  if [ -n "$pids" ]; then
+    echo "Error: port $GATEWAY_PORT is still in use (PID(s) $pids)."
+    echo "Set GATEWAY_PORT to use a different port, or stop the process manually."
+    exit 1
+  fi
+}
+
 BRIDGE_PID=""
 stop_existing_bridge
+stop_existing_gateway
 echo "==> Starting WhatsApp bridge on port $BRIDGE_PORT"
 make bridge-run BRIDGE_PORT="$BRIDGE_PORT" &
 BRIDGE_PID=$!
@@ -118,4 +160,4 @@ cleanup() {
 }
 trap cleanup EXIT INT TERM
 
-./build/nanobot-go gateway
+./build/nanobot-go gateway -p "$GATEWAY_PORT"

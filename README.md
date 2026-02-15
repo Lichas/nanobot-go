@@ -207,7 +207,7 @@ WhatsApp 通过 `bridge/`（Baileys）接入，Go 侧通过 WebSocket 连接 Bri
 ```bash
 make up
 ```
-`make up` 会自动尝试清理占用 `BRIDGE_PORT`（默认 `3001`）的旧进程，避免端口冲突导致启动失败。
+`make up` 会自动尝试清理占用 `BRIDGE_PORT`（默认 `3001`）和 `GATEWAY_PORT`（默认 `18890`）的旧进程，避免端口冲突导致启动失败。
 
 后台常驻：
 ```bash
@@ -450,7 +450,7 @@ Foreground (Bridge + Gateway):
 ```bash
 make up
 ```
-`make up` automatically attempts to stop existing processes on `BRIDGE_PORT` (default `3001`) to avoid startup failures from port conflicts.
+`make up` automatically attempts to stop existing processes on both `BRIDGE_PORT` (default `3001`) and `GATEWAY_PORT` (default `18890`) to avoid startup failures from port conflicts.
 
 Background daemon:
 ```bash
