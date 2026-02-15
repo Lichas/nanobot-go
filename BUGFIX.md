@@ -248,3 +248,15 @@ go test ./pkg/tools/... -v
 - `make up` / `make up-daemon` 默认同时启用 `FORCE_BRIDGE_KILL=1` 和 `FORCE_GATEWAY_KILL=1`。  
 **验证**：
 - 先用测试进程占用 `18890`，执行 `make up-daemon` 后占用进程被清理并成功拉起 Gateway。
+
+## 2026-02-16 - daemon “假启动”未被检测
+
+**问题**：`make up-daemon` 输出启动成功并写入 PID，但进程可能很快退出，用户继续发 Telegram 消息无回复。  
+**原因**：启动脚本只记录 PID，不验证“进程仍存活且端口已监听”。  
+**修复**：
+- 在 `start_daemon.sh` 增加服务健康检查：
+  - 校验 PID 存活
+  - 校验对应端口已监听
+  - 失败时打印日志 tail 并返回错误  
+**验证**：
+- 启动后立即检查 `18890` / `3001` 监听与 `/api/status` 返回正常。

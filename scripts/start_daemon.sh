@@ -78,6 +78,42 @@ is_pid_running() {
   kill -0 "$pid" >/dev/null 2>&1
 }
 
+pid_listening_on_port() {
+  local pid="$1"
+  local port="$2"
+  local pids
+  pids="$(bridge_port_pids "$port" || true)"
+  for p in $pids; do
+    if [ "$p" = "$pid" ]; then
+      return 0
+    fi
+  done
+  return 1
+}
+
+wait_service_ready() {
+  local name="$1"
+  local pid="$2"
+  local port="$3"
+  local log_file="$4"
+
+  local tries=40
+  while [ "$tries" -gt 0 ]; do
+    if is_pid_running "$pid" && pid_listening_on_port "$pid" "$port"; then
+      return 0
+    fi
+    sleep 0.25
+    tries=$((tries - 1))
+  done
+
+  echo "Error: $name failed to start (pid=$pid port=$port)" >&2
+  if [ -f "$log_file" ]; then
+    echo "--- $name log tail ---" >&2
+    tail -n 80 "$log_file" >&2 || true
+  fi
+  return 1
+}
+
 should_kill_pid() {
   local pid="$1"
   local cmd
@@ -180,6 +216,7 @@ if [ -z "$bridge_pid" ] || ! is_pid_running "$bridge_pid"; then
     node "$ROOT_DIR/bridge/dist/index.js" > "$LOG_DIR/bridge.log" 2>&1 &
   echo $! > "$PID_DIR/bridge.pid"
   echo "Bridge PID: $(cat "$PID_DIR/bridge.pid")"
+  wait_service_ready "bridge" "$(cat "$PID_DIR/bridge.pid")" "$BRIDGE_PORT" "$LOG_DIR/bridge.log"
 fi
 
 gateway_pid="$(read_pid_file "$PID_DIR/gateway.pid" || true)"
@@ -214,6 +251,7 @@ if [ -z "$gateway_pid" ] || ! is_pid_running "$gateway_pid"; then
     "$ROOT_DIR/build/nanobot-go" gateway -p "$GATEWAY_PORT" > "$LOG_DIR/gateway.log" 2>&1 &
   echo $! > "$PID_DIR/gateway.pid"
   echo "Gateway PID: $(cat "$PID_DIR/gateway.pid")"
+  wait_service_ready "gateway" "$(cat "$PID_DIR/gateway.pid")" "$GATEWAY_PORT" "$LOG_DIR/gateway.log"
 fi
 
 printf "\nLogs:\n  %s\n  %s\n" "$LOG_DIR/bridge.log" "$LOG_DIR/gateway.log"
