@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- **Telegram 消息 HTML 转义修复**：修复当模型返回内容包含 `<think>` 等类似 HTML 标签时，Telegram API 返回 400 错误的问题
+  - `internal/channels/telegram.go`：使用 `html.EscapeString()` 对发送的文本进行转义
+  - 验证：`go test ./internal/channels/... -v && make build`
+
 ### Added
 
 #### UI/UX 增强四合一功能

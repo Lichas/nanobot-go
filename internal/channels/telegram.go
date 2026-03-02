@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"html"
 	"io"
 	"net/http"
 	"net/url"
@@ -253,7 +254,7 @@ func (t *TelegramChannel) SendMessage(chatID string, text string) error {
 
 	params := url.Values{}
 	params.Set("chat_id", chatID)
-	params.Set("text", text)
+	params.Set("text", html.EscapeString(text))
 	params.Set("parse_mode", "HTML")
 
 	resp, err := t.httpClient.Post(
