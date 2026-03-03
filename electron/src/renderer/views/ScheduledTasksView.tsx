@@ -3,6 +3,7 @@ import { CustomSelect } from '../components/CustomSelect';
 import { CronBuilder } from '../components/CronBuilder';
 import { ExecutionHistory } from '../components/ExecutionHistory';
 import { ConfirmDialog } from '../components/ConfirmDialog';
+import { useTranslation } from '../i18n';
 
 interface CronJob {
   id: string;
@@ -16,6 +17,7 @@ interface CronJob {
   lastRun?: string;
   nextRun?: string;
   executionMode?: 'safe' | 'ask' | 'auto';
+  channel?: string;
 }
 
 interface JobFormData {
@@ -25,9 +27,11 @@ interface JobFormData {
   scheduleValue: string;
   workDir: string;
   executionMode: 'safe' | 'ask' | 'auto';
+  channel: string;
 }
 
 export function ScheduledTasksView() {
+  const { t } = useTranslation();
   const [jobs, setJobs] = useState<CronJob[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -40,7 +44,8 @@ export function ScheduledTasksView() {
     scheduleType: 'cron',
     scheduleValue: '0 9 * * *',
     workDir: '',
-    executionMode: 'ask'
+    executionMode: 'ask',
+    channel: 'desktop'
   });
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [jobToDelete, setJobToDelete] = useState<string | null>(null);
@@ -55,11 +60,11 @@ export function ScheduledTasksView() {
       setJobs(data.jobs || []);
       setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : '加载失败');
+      setError(err instanceof Error ? err.message : t('scheduled.error.load'));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     void fetchJobs();
@@ -75,7 +80,8 @@ export function ScheduledTasksView() {
         prompt: formData.prompt,
         [formData.scheduleType === 'every' ? 'every' : formData.scheduleType === 'once' ? 'at' : 'cron']: formData.scheduleValue,
         workDir: formData.workDir || undefined,
-        executionMode: formData.executionMode
+        executionMode: formData.executionMode,
+        channel: formData.channel
       };
 
       const url = editingJob
@@ -97,11 +103,12 @@ export function ScheduledTasksView() {
         scheduleType: 'cron',
         scheduleValue: '0 9 * * *',
         workDir: '',
-        executionMode: 'ask'
+        executionMode: 'ask',
+        channel: 'desktop'
       });
       void fetchJobs();
     } catch (err) {
-      setError(err instanceof Error ? err.message : (editingJob ? '更新失败' : '创建失败'));
+      setError(err instanceof Error ? err.message : (editingJob ? t('scheduled.error.update') : t('scheduled.error.create')));
     }
   };
 
@@ -113,7 +120,8 @@ export function ScheduledTasksView() {
       scheduleType: job.scheduleType,
       scheduleValue: job.schedule,
       workDir: job.workDir || '',
-      executionMode: job.executionMode || 'ask'
+      executionMode: job.executionMode || 'ask',
+      channel: job.channel || 'desktop'
     });
     setShowForm(true);
   };
@@ -127,7 +135,8 @@ export function ScheduledTasksView() {
       scheduleType: 'cron',
       scheduleValue: '0 9 * * *',
       workDir: '',
-      executionMode: 'ask'
+      executionMode: 'ask',
+      channel: 'desktop'
     });
   };
 
@@ -139,7 +148,7 @@ export function ScheduledTasksView() {
       if (!response.ok) throw new Error('Failed to toggle job');
       void fetchJobs();
     } catch (err) {
-      setError(err instanceof Error ? err.message : '操作失败');
+      setError(err instanceof Error ? err.message : t('scheduled.error.toggle'));
     }
   };
 
@@ -154,10 +163,10 @@ export function ScheduledTasksView() {
         method: 'POST'
       });
       if (!response.ok) throw new Error('Failed to run job');
-      // 刷新任务列表以显示执行状态
+      // Refresh job list to show execution status
       void fetchJobs();
     } catch (err) {
-      setError(err instanceof Error ? err.message : '执行失败');
+      setError(err instanceof Error ? err.message : t('scheduled.error.run'));
     }
   };
 
@@ -170,7 +179,7 @@ export function ScheduledTasksView() {
       if (!response.ok) throw new Error('Failed to delete job');
       void fetchJobs();
     } catch (err) {
-      setError(err instanceof Error ? err.message : '删除失败');
+      setError(err instanceof Error ? err.message : t('scheduled.error.delete'));
     }
     setDeleteDialogOpen(false);
     setJobToDelete(null);
@@ -182,9 +191,9 @@ export function ScheduledTasksView() {
   };
 
   const getScheduleLabel = (job: CronJob) => {
-    if (job.scheduleType === 'every') return `每 ${job.schedule}`;
-    if (job.scheduleType === 'once') return `一次性: ${job.schedule}`;
-    return `Cron: ${job.schedule}`;
+    if (job.scheduleType === 'every') return t('scheduled.schedule.every').replace('{value}', job.schedule);
+    if (job.scheduleType === 'once') return t('scheduled.schedule.once').replace('{value}', job.schedule);
+    return t('scheduled.schedule.cron').replace('{value}', job.schedule);
   };
 
   return (
@@ -192,8 +201,8 @@ export function ScheduledTasksView() {
       <div className="mx-auto max-w-4xl">
         <div className="mb-6 flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">定时任务</h1>
-            <p className="mt-1 text-sm text-foreground/55">创建和管理自动化 AI 任务</p>
+            <h1 className="text-2xl font-bold text-foreground">{t('scheduled.title')}</h1>
+            <p className="mt-1 text-sm text-foreground/55">{t('scheduled.subtitle')}</p>
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -203,7 +212,7 @@ export function ScheduledTasksView() {
               }}
               className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-secondary"
             >
-              执行历史
+              {t('scheduled.executionHistory')}
             </button>
             <button
               onClick={() => {
@@ -215,7 +224,7 @@ export function ScheduledTasksView() {
               }}
               className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
             >
-              {showForm ? (editingJob ? '取消编辑' : '取消') : '+ 新建任务'}
+              {showForm ? (editingJob ? t('scheduled.cancelEdit') : t('scheduled.cancel')) : `+ ${t('scheduled.newTask')}`}
             </button>
           </div>
         </div>
@@ -228,26 +237,26 @@ export function ScheduledTasksView() {
 
         {showForm && (
           <form onSubmit={handleSubmit} className="mb-6 rounded-xl border border-border bg-background p-5 shadow-sm">
-            <h3 className="mb-4 text-base font-semibold">{editingJob ? '编辑任务' : '创建新任务'}</h3>
+            <h3 className="mb-4 text-base font-semibold">{editingJob ? t('scheduled.edit') : t('scheduled.create')}</h3>
             <div className="space-y-4">
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-foreground">任务名称</label>
+                <label className="mb-1.5 block text-sm font-medium text-foreground">{t('scheduled.name')}</label>
                 <input
                   type="text"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  placeholder="例如：每日工作总结"
+                  placeholder={t('scheduled.name.placeholder')}
                   className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-foreground/40 focus:border-primary/40 focus:outline-none"
                   required
                 />
               </div>
 
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-foreground">提示词</label>
+                <label className="mb-1.5 block text-sm font-medium text-foreground">{t('scheduled.prompt')}</label>
                 <textarea
                   value={formData.prompt}
                   onChange={(e) => setFormData({ ...formData, prompt: e.target.value })}
-                  placeholder="输入给 AI 的指令..."
+                  placeholder={t('scheduled.prompt.placeholder')}
                   rows={4}
                   className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-foreground/40 focus:border-primary/40 focus:outline-none"
                   required
@@ -256,7 +265,7 @@ export function ScheduledTasksView() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-foreground">调度类型</label>
+                  <label className="mb-1.5 block text-sm font-medium text-foreground">{t('scheduled.scheduleType')}</label>
                   <CustomSelect
                     value={formData.scheduleType}
                     onChange={(value) => {
@@ -268,9 +277,9 @@ export function ScheduledTasksView() {
                       });
                     }}
                     options={[
-                      { value: 'cron', label: 'Cron 表达式' },
-                      { value: 'every', label: '周期执行' },
-                      { value: 'once', label: '一次性' }
+                      { value: 'cron', label: t('scheduled.type.cron') },
+                      { value: 'every', label: t('scheduled.type.every') },
+                      { value: 'once', label: t('scheduled.type.once') }
                     ]}
                     size="md"
                   />
@@ -278,7 +287,7 @@ export function ScheduledTasksView() {
 
                 {formData.scheduleType === 'cron' ? (
                   <div className="form-group">
-                    <label className="mb-1.5 block text-sm font-medium text-foreground">Cron 表达式</label>
+                    <label className="mb-1.5 block text-sm font-medium text-foreground">{t('scheduled.cronExpression')}</label>
                     <CronBuilder
                       value={formData.scheduleValue}
                       onChange={(value) => setFormData({ ...formData, scheduleValue: value })}
@@ -287,7 +296,7 @@ export function ScheduledTasksView() {
                 ) : (
                   <div>
                     <label className="mb-1.5 block text-sm font-medium text-foreground">
-                      {formData.scheduleType === 'every' ? '间隔(毫秒)' : '执行时间'}
+                      {formData.scheduleType === 'every' ? t('scheduled.intervalMs') : t('scheduled.execTime')}
                     </label>
                     <input
                       type="text"
@@ -302,7 +311,7 @@ export function ScheduledTasksView() {
               </div>
 
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-foreground">工作目录 (可选)</label>
+                <label className="mb-1.5 block text-sm font-medium text-foreground">{t('scheduled.workdir')}</label>
                 <input
                   type="text"
                   value={formData.workDir}
@@ -313,21 +322,41 @@ export function ScheduledTasksView() {
               </div>
 
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-foreground">执行模式</label>
+                <label className="mb-1.5 block text-sm font-medium text-foreground">{t('scheduled.executionMode')}</label>
                 <CustomSelect
                   value={formData.executionMode}
                   onChange={(value) => setFormData({ ...formData, executionMode: value as 'safe' | 'ask' | 'auto' })}
                   options={[
-                    { value: 'safe', label: 'Safe (只读探索)' },
-                    { value: 'ask', label: 'Ask (需要确认)' },
-                    { value: 'auto', label: 'Auto (全自动)' }
+                    { value: 'safe', label: t('scheduled.executionMode.safe') },
+                    { value: 'ask', label: t('scheduled.executionMode.ask') },
+                    { value: 'auto', label: t('scheduled.executionMode.auto') }
                   ]}
                   size="md"
                 />
                 <p className="mt-1 text-xs text-foreground/50">
-                  {formData.executionMode === 'safe' && 'Safe 模式：只读探索，不执行任何修改操作'}
-                  {formData.executionMode === 'ask' && 'Ask 模式：需要用户确认后继续（默认）'}
-                  {formData.executionMode === 'auto' && 'Auto 模式：全自动执行，无需人工介入'}
+                  {formData.executionMode === 'safe' && t('scheduled.executionMode.safe.desc')}
+                  {formData.executionMode === 'ask' && t('scheduled.executionMode.ask.desc')}
+                  {formData.executionMode === 'auto' && t('scheduled.executionMode.auto.desc')}
+                </p>
+              </div>
+
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-foreground">{t('scheduled.channel') || 'Channel'}</label>
+                <CustomSelect
+                  value={formData.channel}
+                  onChange={(value) => setFormData({ ...formData, channel: value })}
+                  options={[
+                    { value: 'desktop', label: 'Desktop' },
+                    { value: 'telegram', label: 'Telegram' },
+                    { value: 'discord', label: 'Discord' },
+                    { value: 'slack', label: 'Slack' },
+                    { value: 'email', label: 'Email' },
+                    { value: 'websocket', label: 'WebSocket' }
+                  ]}
+                  size="md"
+                />
+                <p className="mt-1 text-xs text-foreground/50">
+                  {formData.channel === 'desktop' ? (t('scheduled.channel.desktop.desc') || 'Results will be displayed in the desktop app') : (t('scheduled.channel.other.desc') || `Results will be sent to ${formData.channel}`)}
                 </p>
               </div>
 
@@ -337,13 +366,13 @@ export function ScheduledTasksView() {
                   onClick={cancelEdit}
                   className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-secondary"
                 >
-                  取消
+                  {t('scheduled.cancel')}
                 </button>
                 <button
                   type="submit"
                   className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
                 >
-                  {editingJob ? '保存修改' : '创建任务'}
+                  {editingJob ? t('scheduled.saveChanges') || t('common.save') : t('scheduled.create')}
                 </button>
               </div>
             </div>
@@ -351,11 +380,11 @@ export function ScheduledTasksView() {
         )}
 
         {loading && jobs.length === 0 ? (
-          <div className="py-12 text-center text-foreground/50">加载中...</div>
+          <div className="py-12 text-center text-foreground/50">{t('scheduled.loading')}</div>
         ) : jobs.length === 0 ? (
           <div className="py-12 text-center">
-            <p className="text-foreground/50">暂无定时任务</p>
-            <p className="mt-1 text-sm text-foreground/40">点击右上角创建新任务</p>
+            <p className="text-foreground/50">{t('scheduled.empty')}</p>
+            <p className="mt-1 text-sm text-foreground/40">{t('scheduled.empty.hint')}</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -377,7 +406,7 @@ export function ScheduledTasksView() {
                             : 'bg-gray-100 text-gray-600'
                         }`}
                       >
-                        {job.enabled ? '启用' : '禁用'}
+                        {job.enabled ? t('scheduled.enabled') : t('scheduled.disabled')}
                       </span>
                     </div>
                     <p className="mt-1 text-sm text-foreground/70 line-clamp-2">{job.prompt}</p>
@@ -402,10 +431,10 @@ export function ScheduledTasksView() {
                         {job.executionMode === 'auto' ? 'Auto' : job.executionMode === 'safe' ? 'Safe' : 'Ask'}
                       </span>
                       {job.lastRun && (
-                        <span>上次执行: {new Date(job.lastRun).toLocaleString()}</span>
+                        <span>{t('scheduled.lastRun')}: {new Date(job.lastRun).toLocaleString()}</span>
                       )}
                       {job.nextRun && job.enabled && (
-                        <span>下次执行: {new Date(job.nextRun).toLocaleString()}</span>
+                        <span>{t('scheduled.nextRun')}: {new Date(job.nextRun).toLocaleString()}</span>
                       )}
                     </div>
                   </div>
@@ -413,23 +442,23 @@ export function ScheduledTasksView() {
                     <button
                       onClick={() => void runJobNow(job.id)}
                       className="rounded-lg bg-green-500/10 px-3 py-1.5 text-xs font-medium text-green-600 hover:bg-green-500/20"
-                      title="立即执行"
+                      title={t('scheduled.runNow.title')}
                     >
-                      ▶ 执行
+                      ▶ {t('scheduled.runNow')}
                     </button>
                     <button
                       onClick={() => void viewJobHistory(job.id)}
                       className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-foreground hover:bg-secondary"
-                      title="查看执行历史"
+                      title={t('scheduled.history.title')}
                     >
-                      历史
+                      {t('scheduled.history')}
                     </button>
                     <button
                       onClick={() => editJob(job)}
                       className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-foreground hover:bg-secondary"
-                      title="编辑任务"
+                      title={t('scheduled.edit.title')}
                     >
-                      编辑
+                      {t('common.edit')}
                     </button>
                     <button
                       onClick={() => void toggleJob(job.id, job.enabled)}
@@ -439,13 +468,14 @@ export function ScheduledTasksView() {
                           : 'bg-primary text-primary-foreground hover:bg-primary/90'
                       }`}
                     >
-                      {job.enabled ? '禁用' : '启用'}
+                      {job.enabled ? t('scheduled.disable') || t('common.disable') : t('scheduled.enable') || t('common.enable')}
                     </button>
                     <button
                       onClick={() => void deleteJob(job.id)}
                       className="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50"
+                      title={t('scheduled.delete.title')}
                     >
-                      删除
+                      {t('common.delete')}
                     </button>
                   </div>
                 </div>
@@ -460,11 +490,11 @@ export function ScheduledTasksView() {
             <div className="max-h-[80vh] w-full max-w-3xl overflow-hidden rounded-xl border border-border bg-background shadow-lg">
               <div className="flex items-center justify-between border-b border-border px-4 py-3">
                 <div>
-                  <h3 className="font-semibold text-foreground">执行历史</h3>
+                  <h3 className="font-semibold text-foreground">{t('scheduled.executionHistory')}</h3>
                   <p className="text-xs text-foreground/50">
                     {selectedJobId
-                      ? jobs.find((j) => j.id === selectedJobId)?.title || '任务执行记录'
-                      : '所有任务执行记录'}
+                      ? jobs.find((j) => j.id === selectedJobId)?.title || t('scheduled.executionHistory')
+                      : t('scheduled.executionHistory.all')}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -473,7 +503,7 @@ export function ScheduledTasksView() {
                       onClick={() => setSelectedJobId(undefined)}
                       className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-foreground hover:bg-secondary"
                     >
-                      查看全部
+                      {t('scheduled.executionHistory.viewAll')}
                     </button>
                   )}
                   <button
@@ -497,10 +527,10 @@ export function ScheduledTasksView() {
       {/* Delete Confirmation Dialog */}
       <ConfirmDialog
         isOpen={deleteDialogOpen}
-        title="删除定时任务"
-        message="确定要删除这个定时任务吗？此操作不可恢复。"
-        confirmText="删除"
-        cancelText="取消"
+        title={t('scheduled.delete.title')}
+        message={t('scheduled.delete.confirm')}
+        confirmText={t('common.delete')}
+        cancelText={t('common.cancel')}
         onConfirm={confirmDeleteJob}
         onCancel={() => {
           setDeleteDialogOpen(false);

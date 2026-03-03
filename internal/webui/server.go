@@ -1259,6 +1259,7 @@ type cronRequest struct {
 	At            string `json:"at,omitempty"`    // ISO8601 时间
 	WorkDir       string `json:"workDir,omitempty"`
 	ExecutionMode string `json:"executionMode,omitempty"` // safe, ask, auto
+	Channel       string `json:"channel,omitempty"`       // 输出频道
 }
 
 // cronJobResponse 定时任务响应格式（与前端对齐）
@@ -1274,6 +1275,7 @@ type cronJobResponse struct {
 	LastRun       string `json:"lastRun,omitempty"`
 	NextRun       string `json:"nextRun,omitempty"`
 	ExecutionMode string `json:"executionMode,omitempty"`
+	Channel       string `json:"channel,omitempty"`
 }
 
 func (s *Server) handleCron(w http.ResponseWriter, r *http.Request) {
@@ -1359,9 +1361,16 @@ func (s *Server) handleCronCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// 使用请求中的 channel，如果未提供则默认为 desktop
+	channel := req.Channel
+	if channel == "" {
+		channel = "desktop"
+	}
+
 	payload := cron.Payload{
 		Message: req.Prompt,
-		Channel: "desktop",
+		Channel: channel,
+		Deliver: channel != "desktop",
 	}
 
 	job, err := s.cronService.AddJobWithOptions(req.Title, schedule, payload, req.ExecutionMode)
@@ -1463,6 +1472,7 @@ func (s *Server) handleCronUpdate(w http.ResponseWriter, r *http.Request, jobID 
 		At            string `json:"at,omitempty"`
 		WorkDir       string `json:"workDir,omitempty"`
 		ExecutionMode string `json:"executionMode,omitempty"`
+		Channel       string `json:"channel,omitempty"`
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -1507,9 +1517,16 @@ func (s *Server) handleCronUpdate(w http.ResponseWriter, r *http.Request, jobID 
 		return
 	}
 
+	// 使用请求中的 channel，如果未提供则默认为 desktop
+	channel := req.Channel
+	if channel == "" {
+		channel = "desktop"
+	}
+
 	payload := cron.Payload{
 		Message: req.Prompt,
-		Channel: "desktop",
+		Channel: channel,
+		Deliver: channel != "desktop",
 	}
 
 	job, ok := s.cronService.UpdateJobWithOptions(jobID, req.Title, schedule, payload, req.ExecutionMode)
@@ -1572,6 +1589,7 @@ func (s *Server) toCronJobResponse(job *cron.Job) cronJobResponse {
 		Enabled:       job.Enabled,
 		CreatedAt:     time.UnixMilli(job.Created).Format(time.RFC3339),
 		ExecutionMode: job.ExecutionMode,
+		Channel:       job.Payload.Channel,
 	}
 
 	switch job.Schedule.Type {

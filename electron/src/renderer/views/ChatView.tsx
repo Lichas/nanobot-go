@@ -2026,11 +2026,12 @@ export function ChatView() {
                   </div>
                 ) : (
                   <div className="w-full px-1 py-1 text-foreground">
-                    {message.timeline && message.timeline.length > 0 ? (
-                      renderTimeline(message.timeline, false)
-                    ) : (
-                      renderMarkdownWithActions(message.content, message.id)
+                    {message.timeline && message.timeline.length > 0 && (
+                      <div className="mb-3">
+                        {renderTimeline(message.timeline, false)}
+                      </div>
                     )}
+                    {renderMarkdownWithActions(message.content, message.id)}
                     {message.durationMs !== undefined && message.durationMs > 0 && (
                       <div className="mt-2 flex items-center gap-1.5 text-[11px] text-foreground/40">
                         <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">

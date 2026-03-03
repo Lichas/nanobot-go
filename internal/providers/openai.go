@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -402,63 +403,153 @@ func convertToChatMessages(messages []Message) []chatMessage {
 	return result
 }
 
-// doRequest 执行非流式请求
+// doRequest 执行非流式请求（带重试机制）
 func (p *OpenAIProvider) doRequest(ctx context.Context, payload []byte, stream bool) ([]byte, error) {
 	endpoint := p.apiBase + "/chat/completions"
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewReader(payload))
-	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %w", err)
+	const maxRetries = 3
+	var lastErr error
+
+	for attempt := 0; attempt < maxRetries; attempt++ {
+		if attempt > 0 {
+			// 重试前等待，使用指数退避
+			backoff := time.Duration(attempt) * time.Second
+			select {
+			case <-ctx.Done():
+				return nil, ctx.Err()
+			case <-time.After(backoff):
+			}
+		}
+
+		req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewReader(payload))
+		if err != nil {
+			return nil, fmt.Errorf("failed to create request: %w", err)
+		}
+
+		setCommonHeaders(req, p.apiKey)
+
+		if stream {
+			req.Header.Set("Accept", "text/event-stream")
+		}
+
+		resp, err := p.httpClient.Do(req)
+		if err != nil {
+			lastErr = err
+			// 检查是否是可重试的错误
+			if isRetryableError(err) {
+				continue
+			}
+			return nil, fmt.Errorf("chat completion failed: %w", err)
+		}
+
+		body, err := io.ReadAll(resp.Body)
+		resp.Body.Close()
+		if err != nil {
+			lastErr = err
+			if isRetryableError(err) {
+				continue
+			}
+			return nil, fmt.Errorf("failed to read response: %w", err)
+		}
+
+		if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+			// 服务器错误时重试
+			if resp.StatusCode >= 500 || resp.StatusCode == 429 {
+				lastErr = fmt.Errorf("chat completion failed: %s", formatAPIError(body, resp.StatusCode))
+				continue
+			}
+			return nil, fmt.Errorf("chat completion failed: %s", formatAPIError(body, resp.StatusCode))
+		}
+
+		return body, nil
 	}
 
-	setCommonHeaders(req, p.apiKey)
-
-	if stream {
-		req.Header.Set("Accept", "text/event-stream")
-	}
-
-	resp, err := p.httpClient.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("chat completion failed: %w", err)
-	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read response: %w", err)
-	}
-
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return nil, fmt.Errorf("chat completion failed: %s", formatAPIError(body, resp.StatusCode))
-	}
-
-	return body, nil
+	return nil, fmt.Errorf("chat completion failed after %d attempts: %w", maxRetries, lastErr)
 }
 
-// doStreamRequest 执行流式请求
+// isRetryableError 检查错误是否可重试
+func isRetryableError(err error) bool {
+	if err == nil {
+		return false
+	}
+	// 检查上下文取消或超时
+	if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
+		return true
+	}
+	// 检查网络错误
+	if netErr, ok := err.(interface{ Timeout() bool }); ok && netErr.Timeout() {
+		return true
+	}
+	// 检查临时错误
+	if netErr, ok := err.(interface{ Temporary() bool }); ok && netErr.Temporary() {
+		return true
+	}
+	// 检查常见错误字符串
+	errStr := strings.ToLower(err.Error())
+	retryableStrings := []string{
+		"timeout", "deadline exceeded", "context canceled",
+		"connection refused", "connection reset", "broken pipe",
+		"no such host", "temporary", "retry",
+	}
+	for _, s := range retryableStrings {
+		if strings.Contains(errStr, s) {
+			return true
+		}
+	}
+	return false
+}
+
+// doStreamRequest 执行流式请求（带重试机制）
 func (p *OpenAIProvider) doStreamRequest(ctx context.Context, payload []byte) (io.ReadCloser, error) {
 	endpoint := p.apiBase + "/chat/completions"
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewReader(payload))
-	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %w", err)
+	const maxRetries = 3
+	var lastErr error
+
+	for attempt := 0; attempt < maxRetries; attempt++ {
+		if attempt > 0 {
+			// 重试前等待，使用指数退避
+			backoff := time.Duration(attempt) * time.Second
+			select {
+			case <-ctx.Done():
+				return nil, ctx.Err()
+			case <-time.After(backoff):
+			}
+		}
+
+		req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewReader(payload))
+		if err != nil {
+			return nil, fmt.Errorf("failed to create request: %w", err)
+		}
+
+		setCommonHeaders(req, p.apiKey)
+		req.Header.Set("Accept", "text/event-stream")
+
+		resp, err := p.streamClient.Do(req)
+		if err != nil {
+			lastErr = err
+			// 检查是否是可重试的错误
+			if isRetryableError(err) {
+				continue
+			}
+			return nil, fmt.Errorf("stream request failed: %w", err)
+		}
+
+		if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+			body, _ := io.ReadAll(resp.Body)
+			resp.Body.Close()
+			// 服务器错误或限流时重试
+			if resp.StatusCode >= 500 || resp.StatusCode == 429 {
+				lastErr = fmt.Errorf("stream request failed: %s", formatAPIError(body, resp.StatusCode))
+				continue
+			}
+			return nil, fmt.Errorf("stream request failed: %s", formatAPIError(body, resp.StatusCode))
+		}
+
+		return resp.Body, nil
 	}
 
-	setCommonHeaders(req, p.apiKey)
-	req.Header.Set("Accept", "text/event-stream")
-
-	resp, err := p.streamClient.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("stream request failed: %w", err)
-	}
-
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		body, _ := io.ReadAll(resp.Body)
-		resp.Body.Close()
-		return nil, fmt.Errorf("stream request failed: %s", formatAPIError(body, resp.StatusCode))
-	}
-
-	return resp.Body, nil
+	return nil, fmt.Errorf("stream request failed after %d attempts: %w", maxRetries, lastErr)
 }
 
 func setCommonHeaders(req *http.Request, apiKey string) {

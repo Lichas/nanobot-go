@@ -267,3 +267,78 @@ func TestMCPToolWrapperExecuteUsesDefaultTimeout(t *testing.T) {
 	assert.Contains(t, err.Error(), context.DeadlineExceeded.Error())
 	assert.Less(t, elapsed, time.Second)
 }
+
+func TestWithDefaultTimeout(t *testing.T) {
+	t.Run("no deadline sets timeout", func(t *testing.T) {
+		ctx, cancel := withDefaultTimeout(context.Background(), 50*time.Millisecond)
+		defer cancel()
+
+		deadline, ok := ctx.Deadline()
+		require.True(t, ok)
+		assert.WithinDuration(t, time.Now().Add(50*time.Millisecond), deadline, 20*time.Millisecond)
+	})
+
+	t.Run("long existing deadline uses shorter timeout", func(t *testing.T) {
+		// 模拟 cron 任务的 10 分钟 deadline
+		parentCtx, parentCancel := context.WithTimeout(context.Background(), 10*time.Minute)
+		defer parentCancel()
+
+		// MCP 连接应该使用 8 秒超时（而不是 10 分钟）
+		ctx, cancel := withDefaultTimeout(parentCtx, 8*time.Second)
+		defer cancel()
+
+		deadline, ok := ctx.Deadline()
+		require.True(t, ok)
+		// 应该使用 8 秒超时
+		remaining := time.Until(deadline)
+		assert.Less(t, remaining, 10*time.Second)
+		assert.Greater(t, remaining, 6*time.Second)
+	})
+
+	t.Run("short existing deadline keeps existing", func(t *testing.T) {
+		// 设置一个短 deadline
+		parentCtx, parentCancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+		defer parentCancel()
+
+		ctx, cancel := withDefaultTimeout(parentCtx, 5*time.Second)
+		defer cancel()
+
+		// 应该返回同一个 context（没有新创建）
+		// 通过检查是否还是 parentCtx 来判断
+		deadline, ok := ctx.Deadline()
+		require.True(t, ok)
+		remaining := time.Until(deadline)
+		// 应该保持短的 deadline
+		assert.Less(t, remaining, 200*time.Millisecond)
+	})
+
+	t.Run("zero timeout returns original context", func(t *testing.T) {
+		ctx, cancel := withDefaultTimeout(context.Background(), 0)
+		defer cancel()
+
+		_, ok := ctx.Deadline()
+		assert.False(t, ok)
+	})
+}
+
+func TestWithDefaultTimeoutRespectsCronLongDeadline(t *testing.T) {
+	// 这个测试模拟 Bug #2 的场景：
+	// cron 任务给了 10 分钟 ctx，MCP 连接应该有 8 秒超时
+	longTimeout := 10 * time.Minute
+	mcpTimeout := 50 * time.Millisecond // 用短时间来加速测试
+
+	parentCtx, parentCancel := context.WithTimeout(context.Background(), longTimeout)
+	defer parentCancel()
+
+	ctx, cancel := withDefaultTimeout(parentCtx, mcpTimeout)
+	defer cancel()
+
+	// 等待 MCP 超时
+	select {
+	case <-ctx.Done():
+		// 正确：应该按照 MCP 的短超时触发
+		assert.Equal(t, context.DeadlineExceeded, ctx.Err())
+	case <-time.After(time.Second):
+		t.Fatal("expected context to be canceled by MCP timeout, but it wasn't")
+	}
+}

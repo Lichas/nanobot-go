@@ -325,7 +325,14 @@ func withDefaultTimeout(ctx context.Context, timeout time.Duration) (context.Con
 	if timeout <= 0 {
 		return ctx, func() {}
 	}
-	if _, hasDeadline := ctx.Deadline(); hasDeadline {
+	// 如果已有 deadline，取两者中更短的时间
+	if existingDeadline, hasDeadline := ctx.Deadline(); hasDeadline {
+		remaining := time.Until(existingDeadline)
+		if remaining > timeout {
+			// 现有 deadline 比 timeout 长，使用更短的 timeout
+			return context.WithTimeout(ctx, timeout)
+		}
+		// 现有 deadline 更短或相等，保持现有
 		return ctx, func() {}
 	}
 	return context.WithTimeout(ctx, timeout)

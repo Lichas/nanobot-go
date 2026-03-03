@@ -66,6 +66,13 @@ export function SessionsView() {
     };
 
     void loadSessions();
+
+    // 定时刷新会话列表（每3秒），以便实时显示正在执行的定时任务
+    const interval = setInterval(() => {
+      void loadSessions();
+    }, 3000);
+
+    return () => clearInterval(interval);
   }, [getSessions]);
 
   // Build channel options dynamically
