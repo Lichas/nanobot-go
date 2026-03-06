@@ -72,7 +72,7 @@
   - `electron/assets/icon.png`、`electron/assets/icon.icns`、`electron/assets/icon.ico`、`electron/public/icon.png`、`icon.png`
   - 验证：`cd electron && npm run build && make build`
 
-- **聊天入口文案与 Thinking 图标优化**：新建任务首页文案改为“启动你的 Agent / 会看文件，会跑任务，会自己往前推进”，并为聊天时间线的 thinking 状态换成更明确的思考图标，同时补齐对应 i18n 文案
+- **聊天入口文案与时间线图标优化**：新建任务首页文案改为“启动你的 Agent / 会看文件，会跑任务，会自己往前推进”，并为聊天时间线的 thinking / tools 状态换成更明确的思考与工具执行图标，同时补齐对应 i18n 文案
   - `electron/src/renderer/views/ChatView.tsx`、`electron/src/renderer/i18n/index.ts`
   - 验证：`cd electron && npm run build && make build`
 
