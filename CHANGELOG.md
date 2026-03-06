@@ -68,6 +68,10 @@
   - `electron/assets/icon.png`、`electron/assets/icon.icns`、`electron/assets/icon.ico`、`electron/public/icon.png`、`icon.png`
   - 验证：`cd electron && npm run build && make build`
 
+- **应用图标构图微调**：调整螃蟹主体在图标中的构图，减少顶部留白并保留完整主体，提升识别度
+  - `electron/assets/icon.png`、`electron/assets/icon.icns`、`electron/assets/icon.ico`、`electron/public/icon.png`、`icon.png`
+  - 验证：`cd electron && npm run build && make build`
+
 ### Added
 
 #### UI/UX 增强四合一功能
