@@ -32,6 +32,10 @@
   - `electron/src/renderer/components/MarkdownRenderer.tsx`
   - 验证：`cd electron && npm run build && make build`
 
+- **MCP / Skills 顶部按钮点击区域修复**：修复 Electron 顶部拖拽区域覆盖导致 `Add` / `Install` 按钮只有部分区域可点击的问题
+  - `electron/src/renderer/views/MCPView.tsx`、`electron/src/renderer/views/SkillsView.tsx`
+  - 验证：`cd electron && npm run build && make build`
+
 ### Added
 
 #### UI/UX 增强四合一功能

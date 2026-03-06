@@ -227,14 +227,14 @@ export function MCPView() {
   return (
     <div className="h-full overflow-y-auto bg-background p-6">
       <div className="mx-auto max-w-5xl">
-        <div className="mb-6 flex items-center justify-between">
+        <div className="relative z-20 mb-6 flex items-center justify-between no-drag">
           <div>
             <h1 className="text-2xl font-bold text-foreground">{t('mcp.title')}</h1>
             <p className="mt-1 text-sm text-foreground/55">{t('mcp.subtitle')}</p>
           </div>
           <button
             onClick={openAddModal}
-            className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+            className="relative z-20 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 no-drag"
           >
             + {t('mcp.add')}
           </button>

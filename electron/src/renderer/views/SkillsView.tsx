@@ -168,14 +168,14 @@ export function SkillsView() {
   return (
     <div className="h-full overflow-y-auto bg-background p-6">
       <div className="mx-auto max-w-5xl">
-        <div className="mb-6 flex items-center justify-between">
+        <div className="relative z-20 mb-6 flex items-center justify-between no-drag">
           <div>
             <h1 className="text-2xl font-bold text-foreground">{t('skills.title')}</h1>
             <p className="mt-1 text-sm text-foreground/55">{t('skills.subtitle')}</p>
           </div>
           <button
             onClick={() => setInstallModalOpen(true)}
-            className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+            className="relative z-20 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 no-drag"
           >
             + {t('skills.install')}
           </button>
