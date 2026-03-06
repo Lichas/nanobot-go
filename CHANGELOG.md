@@ -60,6 +60,10 @@
   - `electron/src/renderer/components/MarkdownRenderer.tsx`
   - 验证：`cd electron && npm run build && make build`
 
+- **应用图标更新**：基于现有螃蟹主视觉重制更贴近桌面应用风格的新图标，统一替换 PNG / ICNS / ICO 资源
+  - `electron/assets/icon.png`、`electron/assets/icon.icns`、`electron/assets/icon.ico`、`electron/public/icon.png`、`icon.png`
+  - 验证：`cd electron && npm run build && make build`
+
 ### Added
 
 #### UI/UX 增强四合一功能
