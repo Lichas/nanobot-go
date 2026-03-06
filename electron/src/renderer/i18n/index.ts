@@ -117,7 +117,7 @@ const zh: Translations = {
   'sidebar.confirmDelete': '确定要删除这个任务吗？',
 
   // Chat
-  'chat.starter.title': '启动你的 Agent',
+  'chat.starter.title': '启动你的 MaxClaw',
   'chat.starter.subtitle': '会看文件，会跑任务，会自己往前推进',
   'chat.timeline.label.thinking': '思考中',
   'chat.timeline.label.tool': '工具',
@@ -370,7 +370,7 @@ const en: Translations = {
   'sidebar.confirmDelete': 'Are you sure you want to delete this task?',
 
   // Chat
-  'chat.starter.title': 'Launch Your Agent',
+  'chat.starter.title': 'Launch Your MaxClaw',
   'chat.starter.subtitle': 'Reads files, runs tasks, and keeps moving work forward.',
   'chat.timeline.label.thinking': 'Thinking',
   'chat.timeline.label.tool': 'Tool',
