@@ -28,6 +28,10 @@
   - `electron/src/renderer/views/ChatView.tsx`
   - 验证：`cd electron && npm run build && make build`
 
+- **聊天代码预览 UI 优化**：Markdown 代码块升级为带语言标签和复制按钮的代码卡片，提升配置示例与代码片段的可读性
+  - `electron/src/renderer/components/MarkdownRenderer.tsx`
+  - 验证：`cd electron && npm run build && make build`
+
 ### Added
 
 #### UI/UX 增强四合一功能
