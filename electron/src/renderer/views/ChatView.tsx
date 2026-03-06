@@ -9,6 +9,7 @@ import { CustomSelect } from '../components/CustomSelect';
 import { FilePreviewSidebar } from '../components/FilePreviewSidebar';
 import { FileTreeSidebar } from '../components/FileTreeSidebar';
 import { extractFileReferences, FileReference } from '../utils/fileReferences';
+import { useTranslation } from '../i18n';
 
 interface Message {
   id: string;
@@ -202,6 +203,7 @@ function extractFirstURL(text: string): string {
 
 export function ChatView() {
   const dispatch = useDispatch();
+  const { t } = useTranslation();
   const { currentSessionKey, sidebarCollapsed, terminalVisible } = useSelector((state: RootState) => state.ui);
   const isMac = window.electronAPI.platform.isMac;
   const { sendMessage, getSession, getSessions, getSkills, getModels, getConfig, updateConfig, runBrowserAction } =
@@ -1000,12 +1002,12 @@ export function ChatView() {
 
   const getActivityLabel = (type: StreamActivity['type']) => {
     if (type === 'status') {
-      return 'Thinking';
+      return t('chat.timeline.label.thinking');
     }
     if (type === 'error') {
-      return 'Error';
+      return t('chat.timeline.label.error');
     }
-    return 'Tool';
+    return t('chat.timeline.label.tool');
   };
 
   const normalizeStoredTimeline = (
@@ -1979,8 +1981,8 @@ export function ChatView() {
                     className="h-full w-full rounded-xl object-cover"
                   />
                 </div>
-                <h1 className="text-4xl font-semibold text-foreground">开始协作</h1>
-                <p className="mt-3 text-base text-foreground/55">7x24 小时帮你干活的全场景个人助理 Agent</p>
+                <h1 className="text-4xl font-semibold text-foreground">{t('chat.starter.title')}</h1>
+                <p className="mt-3 text-base text-foreground/55">{t('chat.starter.subtitle')}</p>
               </div>
 
               {renderComposer(true)}
@@ -2160,7 +2162,15 @@ function ActivityTypeIcon({ className, type }: { className?: string; type: Strea
   if (type === 'status') {
     return (
       <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 3v3m0 12v3m9-9h-3M6 12H3m15.36 6.36l-2.12-2.12M7.76 7.76L5.64 5.64m12.72 0l-2.12 2.12M7.76 16.24l-2.12 2.12" />
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={1.8}
+          d="M8.5 14.5c-1.9 0-3.5-1.45-3.5-3.25C5 9.46 6.57 8 8.5 8c.66 0 1.28.17 1.82.48A4.84 4.84 0 0114 6.9c2.62 0 4.75 1.95 4.75 4.35S16.62 15.6 14 15.6h-2.15l-1.65 1.9a.6.6 0 01-1.05-.4v-1.6H8.5Z"
+        />
+        <circle cx="9" cy="11.2" r="0.7" fill="currentColor" stroke="none" />
+        <circle cx="12" cy="11.2" r="0.7" fill="currentColor" stroke="none" />
+        <circle cx="15" cy="11.2" r="0.7" fill="currentColor" stroke="none" />
       </svg>
     );
   }
