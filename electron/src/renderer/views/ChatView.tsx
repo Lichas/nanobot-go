@@ -899,8 +899,8 @@ export function ChatView() {
     if (event.key === 'Enter' && !event.shiftKey && !isComposing) {
       event.preventDefault();
       if (isGenerating) {
-        // Enter during generation = interrupt with cancel mode
-        handleInterrupt('cancel');
+        // Enter during generation = append more context
+        handleInterrupt('append');
       } else {
         void handleSubmit(event);
       }
@@ -909,8 +909,8 @@ export function ChatView() {
     if (event.key === 'Enter' && event.shiftKey && !isComposing) {
       event.preventDefault();
       if (isGenerating) {
-        // Shift+Enter during generation = interrupt with append mode
-        handleInterrupt('append');
+        // Shift+Enter during generation = interrupt and retry
+        handleInterrupt('cancel');
       }
       // If not generating, Shift+Enter adds newline (default behavior)
     }
@@ -1853,7 +1853,7 @@ export function ChatView() {
               type="button"
               onClick={() => handleInterrupt('append')}
               disabled={!input.trim()}
-              title="Shift+Enter 补充上下文"
+              title="Enter 补充上下文"
               className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-secondary px-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary/80 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <PlusIcon className="h-4 w-4" />
@@ -1862,7 +1862,7 @@ export function ChatView() {
             <button
               type="button"
               onClick={() => handleInterrupt('cancel')}
-              title="Enter 打断并重试"
+              title="Shift+Enter 打断并重试"
               className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-destructive px-3 text-sm font-medium text-destructive-foreground transition-colors hover:bg-destructive/90"
             >
               <StopIcon className="h-4 w-4" />
@@ -1883,11 +1883,11 @@ export function ChatView() {
         <div className="mt-2 flex items-center justify-center gap-4 text-xs text-foreground/50">
           <span className="flex items-center gap-1">
             <kbd className="rounded bg-secondary px-1.5 py-0.5 text-[10px]">Enter</kbd>
-            打断并重试
+            补充上下文
           </span>
           <span className="flex items-center gap-1">
             <kbd className="rounded bg-secondary px-1.5 py-0.5 text-[10px]">Shift+Enter</kbd>
-            补充上下文
+            打断并重试
           </span>
         </div>
       )}

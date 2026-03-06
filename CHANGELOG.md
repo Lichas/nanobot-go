@@ -44,6 +44,10 @@
   - `electron/src/renderer/views/ScheduledTasksView.tsx`、`electron/src/renderer/i18n/index.ts`
   - 验证：`cd electron && npm run build && make build`
 
+- **聊天生成中快捷键语义调整**：生成过程中 `Enter` 改为补充上下文，`Shift+Enter` 改为打断并重试，并同步修正按钮提示与底部快捷键文案
+  - `electron/src/renderer/views/ChatView.tsx`
+  - 验证：`cd electron && npm run build && make build`
+
 ### Added
 
 #### UI/UX 增强四合一功能
