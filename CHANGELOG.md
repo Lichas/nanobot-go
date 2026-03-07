@@ -4,6 +4,10 @@
 
 ### Fixed
 
+- **聊天视图启动时序崩溃修复**：修正 `streamingTimeline` 在 `browserActivityContext` 依赖数组中先被读取、后初始化的顺序错误，避免新建任务页启动时再次触发 `Cannot access ... before initialization`
+  - `electron/src/renderer/views/ChatView.tsx`
+  - 验证：`cd electron && npm run build && make build`
+
 - **Bugfix 文档补充**：新增 `ChatView` 初始化 `ReferenceError` 复盘，说明触发原因、引入方式与避免措施
   - `BUGFIX.md`
   - 验证：`make build`

@@ -357,6 +357,14 @@ export function ChatView() {
     [getSkills]
   );
 
+  const input = inputBySession[currentSessionKey] || '';
+  const isGenerating = Boolean(generatingSessions[currentSessionKey]);
+  const interruptHintVisible = Boolean(interruptHintSessions[currentSessionKey]);
+  const browserCopilotOutput = browserCopilotOutputBySession[currentSessionKey] || '';
+  const browserCopilotBusy = Boolean(browserCopilotBusyBySession[currentSessionKey]);
+  const browserCopilotError = browserCopilotErrorBySession[currentSessionKey] || '';
+  const streamingTimeline = streamingTimelineBySession[currentSessionKey] || [];
+
   const browserActivityContext = useMemo(() => {
     const collectTexts: string[] = [];
     const pushActivity = (activity?: StreamActivity) => {
@@ -409,14 +417,6 @@ export function ChatView() {
   const previewRequestRef = useRef(0);
   const currentSessionKeyRef = useRef(currentSessionKey);
   const pendingFileRefChecksRef = useRef<Set<string>>(new Set());
-
-  const input = inputBySession[currentSessionKey] || '';
-  const isGenerating = Boolean(generatingSessions[currentSessionKey]);
-  const interruptHintVisible = Boolean(interruptHintSessions[currentSessionKey]);
-  const browserCopilotOutput = browserCopilotOutputBySession[currentSessionKey] || '';
-  const browserCopilotBusy = Boolean(browserCopilotBusyBySession[currentSessionKey]);
-  const browserCopilotError = browserCopilotErrorBySession[currentSessionKey] || '';
-  const streamingTimeline = streamingTimelineBySession[currentSessionKey] || [];
 
   const isStarterMode = messages.length === 0 && streamingTimeline.length === 0;
 
