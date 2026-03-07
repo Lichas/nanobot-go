@@ -4,6 +4,10 @@
 
 ### Fixed
 
+- **启动页任务模板升级**：将启动页任务模板替换为更具体可执行的办公、编程、任务拆解和调研模板，并补齐中英双语文案
+  - `electron/src/renderer/views/ChatView.tsx`、`electron/src/renderer/i18n/index.ts`
+  - 验证：`cd electron && npm run build && make build`
+
 - **启动页图标展示修正**：聊天启动页和确认弹窗中的应用图标改为直接显示透明 PNG，不再额外套白底圆角卡片，避免出现重复的 icon 容器视觉
   - `electron/src/renderer/views/ChatView.tsx`、`electron/src/renderer/components/ConfirmDialog.tsx`
   - 验证：`cd electron && npm run build && make build`

@@ -81,29 +81,6 @@ function savePreferredModel(modelId: string): void {
   }
 }
 
-const starterCards = [
-  {
-    title: '工作汇报',
-    description: '季度工作总结与下阶段规划',
-    prompt: '帮我整理一份管理层工作汇报，包含进度、问题、数据指标和下季度计划。'
-  },
-  {
-    title: '内容调研',
-    description: '行业趋势与竞品分析',
-    prompt: '请做一份行业趋势与竞品调研框架，包含指标维度、信息来源和结论结构。'
-  },
-  {
-    title: '教育教学',
-    description: '课堂教学设计与知识讲解',
-    prompt: '请给我一份 45 分钟课程教学方案，包含目标、流程、互动和作业。'
-  },
-  {
-    title: '人工智能入门',
-    description: '面向非技术同学的科普演示',
-    prompt: '请生成一份 AI 入门分享大纲，要求通俗易懂并包含可演示案例。'
-  }
-];
-
 const LazyTerminalPanel = lazy(() =>
   import('../components/TerminalPanel').then((module) => ({ default: module.TerminalPanel }))
 );
@@ -251,6 +228,42 @@ export function ChatView() {
   const [slashQuery, setSlashQuery] = useState('');
   const [slashIndex, setSlashIndex] = useState(0);
   const slashRef = useRef<HTMLDivElement>(null);
+
+  const starterCards = useMemo(
+    () => [
+      {
+        title: t('chat.starter.card.report.title'),
+        description: t('chat.starter.card.report.description'),
+        prompt: t('chat.starter.card.report.prompt')
+      },
+      {
+        title: t('chat.starter.card.meeting.title'),
+        description: t('chat.starter.card.meeting.description'),
+        prompt: t('chat.starter.card.meeting.prompt')
+      },
+      {
+        title: t('chat.starter.card.bugfix.title'),
+        description: t('chat.starter.card.bugfix.description'),
+        prompt: t('chat.starter.card.bugfix.prompt')
+      },
+      {
+        title: t('chat.starter.card.feature.title'),
+        description: t('chat.starter.card.feature.description'),
+        prompt: t('chat.starter.card.feature.prompt')
+      },
+      {
+        title: t('chat.starter.card.plan.title'),
+        description: t('chat.starter.card.plan.description'),
+        prompt: t('chat.starter.card.plan.prompt')
+      },
+      {
+        title: t('chat.starter.card.research.title'),
+        description: t('chat.starter.card.research.description'),
+        prompt: t('chat.starter.card.research.prompt')
+      }
+    ],
+    [t]
+  );
 
   const slashCommands = useMemo(
     () => [
@@ -1991,7 +2004,7 @@ export function ChatView() {
               {renderComposer(true)}
 
               <section className="mt-10">
-                <p className="mb-3 text-sm font-medium text-foreground/65">任务模板</p>
+                <p className="mb-3 text-sm font-medium text-foreground/65">{t('chat.starter.templates')}</p>
                 <div className="grid grid-cols-2 gap-3">
                   {starterCards.map((card) => (
                     <button

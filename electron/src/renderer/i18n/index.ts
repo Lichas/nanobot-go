@@ -119,6 +119,31 @@ const zh: Translations = {
   // Chat
   'chat.starter.title': '启动你的 MaxClaw',
   'chat.starter.subtitle': '会看文件，会跑任务，会自己往前推进',
+  'chat.starter.templates': '任务模板',
+  'chat.starter.card.report.title': '管理层周报',
+  'chat.starter.card.report.description': '整理进展、风险、指标和下周计划',
+  'chat.starter.card.report.prompt':
+    '帮我整理一份给管理层的周报，包含：本周进展、关键成果、风险与阻塞、数据指标、下周计划。语气专业简洁，适合直接汇报；如果缺少数据或负责人，请单独列出待确认项。',
+  'chat.starter.card.meeting.title': '会议纪要转待办',
+  'chat.starter.card.meeting.description': '从会议内容提炼结论、行动项和负责人',
+  'chat.starter.card.meeting.prompt':
+    '根据我提供的会议记录，整理一份结构化纪要，包含：会议主题、关键结论、行动项、负责人、截止时间、风险点。若原文中没有负责人或时间，请明确列为待确认项。',
+  'chat.starter.card.bugfix.title': '代码 Bug 修复',
+  'chat.starter.card.bugfix.description': '读取代码和日志，定位根因并直接修复',
+  'chat.starter.card.bugfix.prompt':
+    '帮我定位并修复当前项目中的 bug。先阅读相关代码和日志，给出根因分析，再直接修改代码并补上必要测试。最后说明改动影响范围、潜在回归点以及验证结果。',
+  'chat.starter.card.feature.title': '实现一个功能',
+  'chat.starter.card.feature.description': '理解现有架构后完成最小可行实现',
+  'chat.starter.card.feature.prompt':
+    '在当前项目中实现这个功能。先理解现有架构和相关模块，给出最小可行实现方案，然后直接完成代码修改、补充必要测试，并确保构建通过。最后总结实现取舍和受影响文件。',
+  'chat.starter.card.plan.title': '复杂任务拆解',
+  'chat.starter.card.plan.description': '把模糊目标拆成可执行步骤和里程碑',
+  'chat.starter.card.plan.prompt':
+    '把这个目标拆成一份可执行任务清单。每项任务都要包含：目标、输入、输出、优先级、预计耗时、依赖关系。最后给出推荐执行顺序、关键里程碑、主要风险和回滚方案。',
+  'chat.starter.card.research.title': '竞品 / 方案调研',
+  'chat.starter.card.research.description': '比较产品或技术路线并输出结论',
+  'chat.starter.card.research.prompt':
+    '围绕这个主题做一份调研。至少比较 3 个竞品或 3 条技术路线，输出：定位或适用场景、核心能力、优缺点、成本、风险、结论与推荐方案。结果要结构化，适合直接做决策输入。',
   'chat.timeline.label.thinking': '思考中',
   'chat.timeline.label.tool': '工具',
   'chat.timeline.label.error': '错误',
@@ -372,6 +397,31 @@ const en: Translations = {
   // Chat
   'chat.starter.title': 'Launch Your MaxClaw',
   'chat.starter.subtitle': 'Reads files, runs tasks, and keeps moving work forward.',
+  'chat.starter.templates': 'Task Templates',
+  'chat.starter.card.report.title': 'Executive Weekly Report',
+  'chat.starter.card.report.description': 'Summarize progress, risks, metrics, and next steps',
+  'chat.starter.card.report.prompt':
+    'Draft a weekly report for leadership that includes: progress this week, key outcomes, risks and blockers, supporting metrics, and next week plan. Keep the tone concise and executive-ready. If metrics or owners are missing, list them as open items to confirm.',
+  'chat.starter.card.meeting.title': 'Meeting Notes to Action Items',
+  'chat.starter.card.meeting.description': 'Turn meeting notes into decisions, owners, and deadlines',
+  'chat.starter.card.meeting.prompt':
+    'Based on the meeting notes I provide, produce a structured summary that includes: meeting topic, key decisions, action items, owners, due dates, and risks. If owners or due dates are missing in the source, call them out as follow-up items.',
+  'chat.starter.card.bugfix.title': 'Fix a Bug',
+  'chat.starter.card.bugfix.description': 'Read code and logs, find the root cause, and patch it',
+  'chat.starter.card.bugfix.prompt':
+    'Help me diagnose and fix a bug in the current project. First inspect the relevant code and logs, explain the root cause, then make the code changes and add any necessary tests. Finish with the impact scope, regression risks, and validation results.',
+  'chat.starter.card.feature.title': 'Implement a Feature',
+  'chat.starter.card.feature.description': 'Understand the codebase and deliver a minimal viable implementation',
+  'chat.starter.card.feature.prompt':
+    'Implement this feature in the current project. First understand the existing architecture and related modules, propose the minimum viable implementation, then make the code changes, add the necessary tests, and make sure the build passes. Summarize the tradeoffs and impacted files at the end.',
+  'chat.starter.card.plan.title': 'Break Down a Complex Task',
+  'chat.starter.card.plan.description': 'Turn a vague goal into concrete steps and milestones',
+  'chat.starter.card.plan.prompt':
+    'Break this goal down into an executable task plan. For each task include: objective, input, output, priority, estimated effort, and dependencies. Then provide the recommended execution order, key milestones, main risks, and rollback options.',
+  'chat.starter.card.research.title': 'Research Competitors / Options',
+  'chat.starter.card.research.description': 'Compare products or technical approaches and recommend one',
+  'chat.starter.card.research.prompt':
+    'Research this topic by comparing at least three competitors or three technical options. For each one, cover positioning or fit, core capabilities, pros and cons, cost, risks, and your final recommendation. The output should be structured and ready to support a decision.',
   'chat.timeline.label.thinking': 'Thinking',
   'chat.timeline.label.tool': 'Tool',
   'chat.timeline.label.error': 'Error',
