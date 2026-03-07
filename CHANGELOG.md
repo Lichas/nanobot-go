@@ -4,6 +4,10 @@
 
 ### Fixed
 
+- **侧栏合成层闪烁修复**：为左侧栏建立稳定独立渲染层，去掉侧栏自身的 `backdrop-blur` 与 `sticky` footer，并增加 `contain/translateZ` 隔离，降低在 `Skills / MCP` 页面旁路重绘导致的整栏发白闪烁
+  - `electron/src/renderer/components/Sidebar.tsx`
+  - 验证：`cd electron && npm run build && make build && cd electron && npm run start`
+
 - **侧栏悬停闪烁修复**：将左侧栏滚动条改为稳定 gutter，避免在 `Skills / MCP` 页面鼠标悬停时滚动条宽度动态变化，引发侧栏命中区域反复抖动和空白闪烁
   - `electron/src/renderer/styles/globals.css`
   - 验证：`cd electron && npm run build && make build`

@@ -340,7 +340,7 @@ export function Sidebar() {
 
   return (
     <aside
-      className={`m-2 mr-0 flex h-[calc(100%-1rem)] w-[290px] flex-col rounded-[28px] border border-white/55 bg-white/72 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)] backdrop-blur-xl ${isMac ? 'pt-10' : 'pt-3'}`}
+      className={`relative z-10 m-2 mr-0 flex h-[calc(100%-1rem)] w-[290px] shrink-0 flex-col overflow-hidden rounded-[28px] border border-white/65 bg-[rgba(255,255,255,0.9)] shadow-[0_18px_42px_rgba(36,48,67,0.08),inset_0_1px_0_rgba(255,255,255,0.92)] [backface-visibility:hidden] [contain:paint] [transform:translateZ(0)] ${isMac ? 'pt-10' : 'pt-3'}`}
     >
       <div className="px-4 pb-2">
         <button
@@ -353,7 +353,7 @@ export function Sidebar() {
       </div>
 
       {/* Menu Items */}
-      <nav className="sidebar-scroll flex-1 overflow-y-auto px-3 pb-4">
+      <nav className="sidebar-scroll min-h-0 flex-1 overflow-y-auto px-3 pb-4 [transform:translateZ(0)]">
         {menuItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
@@ -539,8 +539,8 @@ export function Sidebar() {
 
       {/* Settings Button with Gateway Status */}
       <div
-        className="sticky bottom-0 mt-auto border-t border-white/55 p-3"
-        style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.52))' }}
+        className="mt-auto border-t border-white/55 p-3"
+        style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.2), rgba(255,255,255,0.78))' }}
       >
         <button
           onClick={() => dispatch(setActiveTab('settings'))}
