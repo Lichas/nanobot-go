@@ -4,6 +4,10 @@
 
 ### Fixed
 
+- **聊天主界面中间底板移除**：去掉侧栏与主内容区之间多余的共享背景卡片层，避免界面出现一层没有必要的灰白中间底板
+  - `electron/src/renderer/App.tsx`
+  - 验证：`cd electron && npm run build && make build`
+
 - **聊天主界面视觉升级**：参考桌面 AI 应用的柔和玻璃质感，重做主窗口、侧栏、启动页和输入区的层次、圆角、阴影与留白结构，提升整体精致度与桌面感
   - `electron/src/renderer/styles/globals.css`、`electron/src/renderer/App.tsx`、`electron/src/renderer/components/Sidebar.tsx`、`electron/src/renderer/views/ChatView.tsx`
   - 验证：`cd electron && npm run build && make build`

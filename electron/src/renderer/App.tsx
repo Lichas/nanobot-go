@@ -143,7 +143,7 @@ function App() {
           </div>
         )}
         <Sidebar />
-        <main className="m-2 flex-1 overflow-hidden rounded-[28px] border border-white/60 bg-card shadow-[inset_0_1px_0_rgba(255,255,255,0.75)] backdrop-blur-xl">
+        <main className="flex-1 overflow-hidden rounded-r-[30px] bg-transparent">
           {activeTab === 'chat' && <ChatView />}
           {activeTab === 'sessions' && <SessionsView />}
           {activeTab === 'scheduled' && <ScheduledTasksView />}
