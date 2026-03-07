@@ -4,6 +4,10 @@
 
 ### Fixed
 
+- **Bugfix 文档补充**：新增“运行中会话切换后流式详情丢失”复盘，并同步更新 BUGFIX 索引
+  - `BUGFIX.md`
+  - 验证：`make build`
+
 - **运行中会话切换后流式详情丢失修复**：聊天流式 token 和工具迭代详情改为按 session 缓存，切换到其他会话再切回时，仍可看到运行中的文本输出和工具步骤
   - `electron/src/renderer/views/ChatView.tsx`
   - 验证：`cd electron && npm run build && make build`
