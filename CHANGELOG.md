@@ -4,6 +4,10 @@
 
 ### Fixed
 
+- **聊天页 Terminal 按钮点击修复**：提升聊天线程头部与 Terminal 操作区层级，避免顶部窗口拖拽条覆盖按钮命中区域，导致聊天过程中点击 `Terminal` 无响应
+  - `electron/src/renderer/views/ChatView.tsx`
+  - 验证：`cd electron && npm run build && make build`
+
 - **技能市场页侧栏联动闪烁修复**：为 `SkillsView` 建立独立合成层，并移除技能描述浮层的 `backdrop-blur`，避免技能卡片网格与左侧栏共享大面积重绘区域，导致悬停侧栏时仅在技能市场页出现发白闪烁
   - `electron/src/renderer/views/SkillsView.tsx`
   - 验证：`cd electron && npm run build && make build && cd electron && npm run start`

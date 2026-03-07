@@ -1898,7 +1898,7 @@ export function ChatView() {
 
   const renderThreadHeader = () => (
     <div
-      className={`flex h-16 items-center border-b border-white/55 bg-white/58 backdrop-blur-xl ${
+      className={`relative z-20 flex h-16 items-center border-b border-white/55 bg-white/58 backdrop-blur-xl ${
         isMac && sidebarCollapsed ? 'pl-44 pr-7' : 'px-7'
       }`}
     >
@@ -1906,7 +1906,7 @@ export function ChatView() {
         <h1 className="truncate text-[15px] font-semibold tracking-[0.01em] text-foreground">{sessionTitle}</h1>
       </div>
       {!isStarterMode && (
-        <div className="ml-auto flex items-center gap-2 no-drag">
+        <div className="relative z-30 ml-auto flex items-center gap-2 no-drag">
           <button
             type="button"
             onClick={() => dispatch(toggleTerminal())}
