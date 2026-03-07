@@ -132,10 +132,10 @@ const zh: Translations = {
   'chat.starter.card.bugfix.description': '读取代码和日志，定位根因并直接修复',
   'chat.starter.card.bugfix.prompt':
     '帮我定位并修复当前项目中的 bug。先阅读相关代码和日志，给出根因分析，再直接修改代码并补上必要测试。最后说明改动影响范围、潜在回归点以及验证结果。',
-  'chat.starter.card.feature.title': '实现一个功能',
-  'chat.starter.card.feature.description': '理解现有架构后完成最小可行实现',
+  'chat.starter.card.feature.title': '完成一个网页游戏',
+  'chat.starter.card.feature.description': '做一个画质精美、手感流畅的贪吃蛇网页游戏',
   'chat.starter.card.feature.prompt':
-    '在当前项目中实现这个功能。先理解现有架构和相关模块，给出最小可行实现方案，然后直接完成代码修改、补充必要测试，并确保构建通过。最后总结实现取舍和受影响文件。',
+    '请直接完成一个有意思、画质精美的贪吃蛇网页游戏。要求包含：精致的视觉风格、流畅的移动与碰撞反馈、得分系统、开始/暂停/失败重开、逐步提升难度、适合桌面和移动端操作。优先交付一个可直接运行的完整网页版本，并说明主要玩法设计、技术实现和资源文件位置。',
   'chat.starter.card.plan.title': '复杂任务拆解',
   'chat.starter.card.plan.description': '把模糊目标拆成可执行步骤和里程碑',
   'chat.starter.card.plan.prompt':
@@ -410,10 +410,10 @@ const en: Translations = {
   'chat.starter.card.bugfix.description': 'Read code and logs, find the root cause, and patch it',
   'chat.starter.card.bugfix.prompt':
     'Help me diagnose and fix a bug in the current project. First inspect the relevant code and logs, explain the root cause, then make the code changes and add any necessary tests. Finish with the impact scope, regression risks, and validation results.',
-  'chat.starter.card.feature.title': 'Implement a Feature',
-  'chat.starter.card.feature.description': 'Understand the codebase and deliver a minimal viable implementation',
+  'chat.starter.card.feature.title': 'Build a Web Game',
+  'chat.starter.card.feature.description': 'Create a polished, visually rich Snake game for the web',
   'chat.starter.card.feature.prompt':
-    'Implement this feature in the current project. First understand the existing architecture and related modules, propose the minimum viable implementation, then make the code changes, add the necessary tests, and make sure the build passes. Summarize the tradeoffs and impacted files at the end.',
+    'Build a fun, polished Snake web game with strong visual quality. It should include: refined art direction, smooth movement and collision feedback, score tracking, start/pause/game-over restart flow, progressively increasing difficulty, and controls that work well on both desktop and mobile. Prioritize delivering a complete runnable web version, then summarize the gameplay design, technical approach, and where the key files live.',
   'chat.starter.card.plan.title': 'Break Down a Complex Task',
   'chat.starter.card.plan.description': 'Turn a vague goal into concrete steps and milestones',
   'chat.starter.card.plan.prompt':

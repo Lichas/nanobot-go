@@ -4,6 +4,10 @@
 
 ### Fixed
 
+- **启动页网页游戏模板更新**：将“实现一个功能”模板替换为“完成一个网页游戏”，并补充中英双语下针对高质量贪吃蛇网页游戏的具体执行 prompt
+  - `electron/src/renderer/i18n/index.ts`
+  - 验证：`cd electron && npm run build && make build`
+
 - **启动页任务模板升级**：将启动页任务模板替换为更具体可执行的办公、编程、任务拆解和调研模板，并补齐中英双语文案
   - `electron/src/renderer/views/ChatView.tsx`、`electron/src/renderer/i18n/index.ts`
   - 验证：`cd electron && npm run build && make build`
