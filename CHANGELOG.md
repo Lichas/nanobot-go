@@ -4,6 +4,10 @@
 
 ### Fixed
 
+- **运行中会话切换后流式详情丢失修复**：聊天流式 token 和工具迭代详情改为按 session 缓存，切换到其他会话再切回时，仍可看到运行中的文本输出和工具步骤
+  - `electron/src/renderer/views/ChatView.tsx`
+  - 验证：`cd electron && npm run build && make build`
+
 - **新建任务页右上角入口收敛**：新建任务启动页不再显示 `Terminal` 和文件预览栏 toggle，两个入口仅在已有任务详情页中显示
   - `electron/src/renderer/App.tsx`、`electron/src/renderer/views/ChatView.tsx`
   - 验证：`cd electron && npm run build && make build`

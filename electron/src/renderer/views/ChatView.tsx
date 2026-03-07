@@ -189,7 +189,7 @@ export function ChatView() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [sessionTitle, setSessionTitle] = useState('New thread');
   const [inputBySession, setInputBySession] = useState<Record<string, string>>({});
-  const [streamingTimeline, setStreamingTimeline] = useState<TimelineEntry[]>([]);
+  const [streamingTimelineBySession, setStreamingTimelineBySession] = useState<Record<string, TimelineEntry[]>>({});
   const [availableSkills, setAvailableSkills] = useState<SkillSummary[]>([]);
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const [skillsQuery, setSkillsQuery] = useState('');
@@ -404,10 +404,8 @@ export function ChatView() {
   const skillsPickerRef = useRef<HTMLDivElement>(null);
   const isComposingRef = useRef(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const typingQueueRef = useRef<string[]>([]);
-  const typingTimerRef = useRef<number | null>(null);
   const entrySeqRef = useRef(0);
-  const streamingTimelineRef = useRef<TimelineEntry[]>([]);
+  const streamingTimelineBySessionRef = useRef<Record<string, TimelineEntry[]>>({});
   const previewRequestRef = useRef(0);
   const currentSessionKeyRef = useRef(currentSessionKey);
   const pendingFileRefChecksRef = useRef<Set<string>>(new Set());
@@ -418,6 +416,7 @@ export function ChatView() {
   const browserCopilotOutput = browserCopilotOutputBySession[currentSessionKey] || '';
   const browserCopilotBusy = Boolean(browserCopilotBusyBySession[currentSessionKey]);
   const browserCopilotError = browserCopilotErrorBySession[currentSessionKey] || '';
+  const streamingTimeline = streamingTimelineBySession[currentSessionKey] || [];
 
   const isStarterMode = messages.length === 0 && streamingTimeline.length === 0;
 
@@ -708,72 +707,65 @@ export function ChatView() {
     };
   }, [skillsPickerOpen]);
 
-  const stopTypingTimer = () => {
-    if (typingTimerRef.current !== null) {
-      window.clearInterval(typingTimerRef.current);
-      typingTimerRef.current = null;
-    }
-  };
-
-  const resetTypingState = () => {
-    typingQueueRef.current = [];
-    stopTypingTimer();
-    streamingTimelineRef.current = [];
-    setStreamingTimeline([]);
-  };
-
-  const setStreamingTimelineWithRef = (updater: (prev: TimelineEntry[]) => TimelineEntry[]) => {
-    setStreamingTimeline((prev) => {
-      const next = updater(prev);
-      streamingTimelineRef.current = next;
+  const resetStreamingState = (sessionKey: string) => {
+    setStreamingTimelineBySession((prev) => {
+      if (!prev[sessionKey] || prev[sessionKey].length === 0) {
+        return prev;
+      }
+      const next = { ...prev };
+      delete next[sessionKey];
+      streamingTimelineBySessionRef.current = next;
       return next;
     });
   };
 
-  const ensureTypingTimer = () => {
-    if (typingTimerRef.current !== null) {
-      return;
-    }
-
-    typingTimerRef.current = window.setInterval(() => {
-      if (typingQueueRef.current.length === 0) {
-        stopTypingTimer();
-        return;
+  const setStreamingTimelineForSession = (
+    sessionKey: string,
+    updater: (prev: TimelineEntry[]) => TimelineEntry[]
+  ) => {
+    setStreamingTimelineBySession((prev) => {
+      const current = prev[sessionKey] || [];
+      const nextTimeline = updater(current);
+      if (nextTimeline === current) {
+        return prev;
       }
-
-      const chunk = typingQueueRef.current.splice(0, 2).join('');
-      setStreamingTimelineWithRef((prev) => {
-        if (chunk === '') {
-          return prev;
-        }
-        const last = prev[prev.length - 1];
-        if (last && last.kind === 'text') {
-          return [...prev.slice(0, -1), { ...last, text: last.text + chunk }];
-        }
-        return [
-          ...prev,
-          {
-            id: nextEntryID('text'),
-            kind: 'text',
-            text: chunk
-          }
-        ];
-      });
-    }, 18);
+      const next =
+        nextTimeline.length > 0
+          ? { ...prev, [sessionKey]: nextTimeline }
+          : (() => {
+              if (!(sessionKey in prev)) {
+                return prev;
+              }
+              const trimmed = { ...prev };
+              delete trimmed[sessionKey];
+              return trimmed;
+            })();
+      if (next === prev) {
+        return prev;
+      }
+      streamingTimelineBySessionRef.current = next;
+      return next;
+    });
   };
 
-  const enqueueTyping = (text: string) => {
-    if (!text) {
+  const appendTextToTimeline = (sessionKey: string, chunk: string) => {
+    if (!chunk) {
       return;
     }
-    typingQueueRef.current.push(...Array.from(text));
-    ensureTypingTimer();
-  };
-
-  const waitForTypingDrain = async () => {
-    while (typingQueueRef.current.length > 0 || typingTimerRef.current !== null) {
-      await new Promise((resolve) => setTimeout(resolve, 20));
-    }
+    setStreamingTimelineForSession(sessionKey, (prev) => {
+      const last = prev[prev.length - 1];
+      if (last && last.kind === 'text') {
+        return [...prev.slice(0, -1), { ...last, text: last.text + chunk }];
+      }
+      return [
+        ...prev,
+        {
+          id: nextEntryID('text'),
+          kind: 'text',
+          text: chunk
+        }
+      ];
+    });
   };
 
   const nextEntryID = (prefix: string) => {
@@ -992,8 +984,8 @@ export function ChatView() {
     }
   };
 
-  const appendActivityToTimeline = (activity: StreamActivity) => {
-    setStreamingTimelineWithRef((prev) => {
+  const appendActivityToTimeline = (sessionKey: string, activity: StreamActivity) => {
+    setStreamingTimelineForSession(sessionKey, (prev) => {
       const last = prev[prev.length - 1];
       if (
         last &&
@@ -1140,13 +1132,11 @@ export function ChatView() {
           }
         }
 
-        resetTypingState();
       } catch {
         if (!cancelled) {
           setMessages([]);
           setSessionTitle('New thread');
           setPreviewSidebarCollapsed(true);
-          resetTypingState();
         }
       }
     };
@@ -1155,7 +1145,6 @@ export function ChatView() {
 
     return () => {
       cancelled = true;
-      resetTypingState();
     };
   }, [currentSessionKey, getSession, getSessions]);
 
@@ -1205,7 +1194,7 @@ export function ChatView() {
     clearInputForSession(requestSessionKey);
     setAttachedFiles([]);
     setSkillsPickerOpen(false);
-    resetTypingState();
+    resetStreamingState(requestSessionKey);
 
     let assistantContent = '';
     const startTime = Date.now();
@@ -1216,19 +1205,14 @@ export function ChatView() {
         requestSessionKey,
         (delta) => {
           assistantContent += delta;
-          if (currentSessionKeyRef.current === requestSessionKey) {
-            enqueueTyping(delta);
-          }
+          appendTextToTimeline(requestSessionKey, delta);
         },
         (event) => {
-          if (currentSessionKeyRef.current !== requestSessionKey) {
-            return;
-          }
           const activity = toStreamActivity(event);
           if (!activity) {
             return;
           }
-          appendActivityToTimeline(activity);
+          appendActivityToTimeline(requestSessionKey, activity);
         },
         selectedSkills,
         userMessage.attachments
@@ -1240,16 +1224,11 @@ export function ChatView() {
 
       if (!assistantContent && result.response) {
         assistantContent = result.response;
-        if (currentSessionKeyRef.current === requestSessionKey) {
-          enqueueTyping(result.response);
-        }
-      }
-
-      if (currentSessionKeyRef.current === requestSessionKey) {
-        await waitForTypingDrain();
+        appendTextToTimeline(requestSessionKey, result.response);
       }
 
       const durationMs = Date.now() - startTime;
+      const completedTimeline = streamingTimelineBySessionRef.current[requestSessionKey] || [];
       if (currentSessionKeyRef.current === requestSessionKey) {
         setMessages((prev) => [
           ...prev,
@@ -1258,18 +1237,18 @@ export function ChatView() {
             role: 'assistant',
             content: assistantContent,
             timestamp: new Date(),
-            timeline: streamingTimelineRef.current.length > 0 ? [...streamingTimelineRef.current] : undefined,
+            timeline: completedTimeline.length > 0 ? [...completedTimeline] : undefined,
             durationMs
           }
         ]);
         setPreviewSidebarCollapsed(true);
-        resetTypingState();
       }
+      resetStreamingState(requestSessionKey);
     } catch (err) {
-      const errorTimeline = streamingTimelineRef.current.length > 0 ? [...streamingTimelineRef.current] : undefined;
+      const errorTimeline = streamingTimelineBySessionRef.current[requestSessionKey] || [];
       const durationMs = Date.now() - startTime;
+      resetStreamingState(requestSessionKey);
       if (currentSessionKeyRef.current === requestSessionKey) {
-        resetTypingState();
         setMessages((prev) => [
           ...prev,
           {
@@ -1277,7 +1256,7 @@ export function ChatView() {
             role: 'assistant',
             content: err instanceof Error ? `消息发送失败：${err.message}` : '消息发送失败，请检查 Gateway 状态后重试。',
             timestamp: new Date(),
-            timeline: errorTimeline,
+            timeline: errorTimeline.length > 0 ? [...errorTimeline] : undefined,
             durationMs
           }
         ]);
