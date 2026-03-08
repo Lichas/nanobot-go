@@ -20,6 +20,10 @@
 
 ### Fixed
 
+- **Telegram 图片收发修复**：为 `telegram` 渠道补齐入站图片/图片文档识别，将图片 `file_id` 与媒体类型透传到消息总线，保留现有出站图片发送能力，修复图片消息被静默丢弃的问题
+  - `internal/channels/base.go`、`internal/channels/telegram.go`、`internal/channels/telegram_media_test.go`、`internal/cli/gateway.go`
+  - 验证：`go test ./internal/channels ./internal/cli`、`make build`
+
 - **QQ 机器人官方接入修复**：`qq` 渠道改为参考 openclaw `@sliverp/qqbot` 的官方 Gateway WebSocket + OpenAPI 模式，支持 `AppID/AppSecret` 与 `AppID:AppSecret` 两种配置方式；入站 C2C 消息按 `author.user_openid` 路由，出站回复复用最近一条入站消息 `msg_id`，并兼容旧的数字 QQ 白名单配置，修复 “Hello QQ” 无响应
   - `internal/channels/qq.go`、`internal/channels/qq_test.go`、`internal/channels/channels_test.go`、`internal/config/schema.go`、`internal/cli/gateway.go`、`internal/webui/server.go`、`electron/src/renderer/types/channels.ts`、`electron/src/renderer/views/SettingsView.tsx`、`ARCHITECTURE.md`、`go.mod`、`go.sum`
   - 验证：`go test ./internal/channels ./internal/webui`、`cd electron && npm run build`、`make build`、`./build/maxclaw gateway -p 18891`（确认 `qq` 渠道启用并成功获取官方 access token）

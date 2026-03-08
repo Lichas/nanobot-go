@@ -105,6 +105,7 @@ var gatewayCmd = &cobra.Command{
 			tgChannel.SetMessageHandler(func(msg *channels.Message) {
 				// 转发到消息总线
 				inboundMsg := bus.NewInboundMessage("telegram", msg.Sender, msg.ChatID, msg.Text)
+				inboundMsg.Media = msg.Media
 				messageBus.PublishInbound(inboundMsg)
 			})
 			channelRegistry.Register(tgChannel)

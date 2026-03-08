@@ -2,6 +2,8 @@ package channels
 
 import (
 	"context"
+
+	"github.com/Lichas/maxclaw/internal/bus"
 )
 
 // Message 频道消息
@@ -11,6 +13,7 @@ type Message struct {
 	Sender  string
 	ChatID  string
 	Channel string
+	Media   *bus.MediaAttachment
 	Raw     interface{}
 }
 

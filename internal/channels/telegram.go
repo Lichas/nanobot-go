@@ -17,6 +17,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Lichas/maxclaw/internal/bus"
 	"github.com/Lichas/maxclaw/internal/logging"
 )
 
@@ -42,6 +43,49 @@ type TelegramChannel struct {
 	botUsername    string
 	botName        string
 	lastError      string
+}
+
+type telegramGetUpdatesResponse struct {
+	OK     bool             `json:"ok"`
+	Result []telegramUpdate `json:"result"`
+}
+
+type telegramUpdate struct {
+	UpdateID int64           `json:"update_id"`
+	Message  telegramMessage `json:"message"`
+}
+
+type telegramMessage struct {
+	MessageID int64             `json:"message_id"`
+	From      telegramUser      `json:"from"`
+	Chat      telegramChat      `json:"chat"`
+	Text      string            `json:"text"`
+	Caption   string            `json:"caption"`
+	Photo     []telegramPhoto   `json:"photo"`
+	Document  *telegramDocument `json:"document"`
+	Date      int64             `json:"date"`
+}
+
+type telegramUser struct {
+	ID       int64  `json:"id"`
+	Username string `json:"username"`
+}
+
+type telegramChat struct {
+	ID   int64  `json:"id"`
+	Type string `json:"type"`
+}
+
+type telegramPhoto struct {
+	FileID string `json:"file_id"`
+	Width  int    `json:"width"`
+	Height int    `json:"height"`
+}
+
+type telegramDocument struct {
+	FileID   string `json:"file_id"`
+	FileName string `json:"file_name"`
+	MimeType string `json:"mime_type"`
 }
 
 // NewTelegramChannel 创建 Telegram 频道
@@ -153,25 +197,7 @@ func (t *TelegramChannel) fetchUpdates() {
 		return
 	}
 
-	var result struct {
-		OK     bool `json:"ok"`
-		Result []struct {
-			UpdateID int64 `json:"update_id"`
-			Message  struct {
-				MessageID int64 `json:"message_id"`
-				From      struct {
-					ID       int64  `json:"id"`
-					Username string `json:"username"`
-				} `json:"from"`
-				Chat struct {
-					ID   int64  `json:"id"`
-					Type string `json:"type"`
-				} `json:"chat"`
-				Text string `json:"text"`
-				Date int64  `json:"date"`
-			} `json:"message"`
-		} `json:"result"`
-	}
+	var result telegramGetUpdatesResponse
 
 	if err := json.Unmarshal(body, &result); err != nil {
 		st := t.Status()
@@ -201,27 +227,89 @@ func (t *TelegramChannel) fetchUpdates() {
 			t.offset = update.UpdateID
 		}
 
-		if update.Message.Text != "" && t.messageHandler != nil {
-			if !t.isAllowed(update.Message.From.ID, update.Message.From.Username) {
+		if t.messageHandler != nil {
+			msg := t.buildInboundMessage(update.Message)
+			if msg == nil {
 				continue
 			}
-			sender := update.Message.From.Username
-			if strings.TrimSpace(sender) == "" {
-				sender = strconv.FormatInt(update.Message.From.ID, 10)
-			}
-			msg := &Message{
-				ID:      strconv.FormatInt(update.Message.MessageID, 10),
-				Text:    update.Message.Text,
-				Sender:  sender,
-				ChatID:  strconv.FormatInt(update.Message.Chat.ID, 10),
-				Channel: "telegram",
-				Raw:     update,
-			}
+			msg.Raw = update
 			t.messageHandler(msg)
 			if lg := logging.Get(); lg != nil && lg.Channels != nil {
-				lg.Channels.Printf("telegram inbound chat=%s sender=%s text=%q", msg.ChatID, msg.Sender, logging.Truncate(msg.Text, 300))
+				if msg.Media != nil && msg.Media.Type != "" {
+					lg.Channels.Printf("telegram inbound chat=%s sender=%s text=%q media=%s", msg.ChatID, msg.Sender, logging.Truncate(msg.Text, 300), msg.Media.Type)
+				} else {
+					lg.Channels.Printf("telegram inbound chat=%s sender=%s text=%q", msg.ChatID, msg.Sender, logging.Truncate(msg.Text, 300))
+				}
 			}
 		}
+	}
+}
+
+func (t *TelegramChannel) buildInboundMessage(message telegramMessage) *Message {
+	if !t.isAllowed(message.From.ID, message.From.Username) {
+		return nil
+	}
+
+	text := strings.TrimSpace(message.Text)
+	if text == "" {
+		text = strings.TrimSpace(message.Caption)
+	}
+
+	media := telegramInboundMedia(message)
+	if text == "" && media != nil {
+		switch media.Type {
+		case "image":
+			text = "[Image]"
+		case "document":
+			text = "[Document]"
+		default:
+			text = "[Attachment]"
+		}
+	}
+	if text == "" {
+		return nil
+	}
+
+	sender := message.From.Username
+	if strings.TrimSpace(sender) == "" {
+		sender = strconv.FormatInt(message.From.ID, 10)
+	}
+
+	return &Message{
+		ID:      strconv.FormatInt(message.MessageID, 10),
+		Text:    text,
+		Sender:  sender,
+		ChatID:  strconv.FormatInt(message.Chat.ID, 10),
+		Channel: "telegram",
+		Media:   media,
+	}
+}
+
+func telegramInboundMedia(message telegramMessage) *bus.MediaAttachment {
+	if len(message.Photo) > 0 {
+		photo := message.Photo[len(message.Photo)-1]
+		return &bus.MediaAttachment{
+			Type:     "image",
+			FileID:   strings.TrimSpace(photo.FileID),
+			MimeType: "image/jpeg",
+		}
+	}
+
+	if message.Document == nil {
+		return nil
+	}
+
+	mimeType := strings.TrimSpace(message.Document.MimeType)
+	mediaType := "document"
+	if strings.HasPrefix(strings.ToLower(mimeType), "image/") {
+		mediaType = "image"
+	}
+
+	return &bus.MediaAttachment{
+		Type:     mediaType,
+		FileID:   strings.TrimSpace(message.Document.FileID),
+		MimeType: mimeType,
+		URL:      strings.TrimSpace(message.Document.FileName),
 	}
 }
 
