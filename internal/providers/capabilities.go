@@ -30,8 +30,7 @@ func SupportsImageInput(providerName, model string) bool {
 			strings.Contains(modelName, "claude-sonnet-4") ||
 			strings.Contains(modelName, "claude-opus-4")
 	case "zhipu":
-		return strings.Contains(modelName, "glm-5") ||
-			strings.Contains(modelName, "glm-4.6v") ||
+		return strings.Contains(modelName, "glm-4.6v") ||
 			strings.Contains(modelName, "glm-ocr") ||
 			strings.Contains(modelName, "vision") ||
 			strings.Contains(modelName, "vl")

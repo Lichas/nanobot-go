@@ -24,6 +24,10 @@
   - `internal/config/schema.go`、`internal/config/schema_test.go`、`internal/providers/base.go`、`internal/providers/openai.go`、`internal/providers/openai_test.go`、`internal/agent/loop.go`、`internal/agent/loop_test.go`、`internal/cli/agent.go`、`internal/cli/cron.go`、`internal/cli/gateway.go`、`internal/webui/server.go`、`electron/src/renderer/types/providers.ts`、`electron/src/renderer/components/ProviderEditor.tsx`、`electron/src/renderer/views/SettingsView.tsx`、`ARCHITECTURE.md`
   - 验证：`go test ./internal/config ./internal/providers ./internal/agent ./internal/cli ./internal/webui`、`cd electron && npm run build`、`make build`
 
+- **多模态 fallback 收紧**：撤销将 `zhipu/glm-5` 默认判为视觉模型的启发式，避免向不支持图片输入的文本模型发送 `image_url` 内容；设置页预设也不再默认把 `GLM-5` 标记为 `Multimodal`
+  - `internal/providers/capabilities.go`、`internal/providers/openai_test.go`、`electron/src/renderer/types/providers.ts`
+  - 验证：`go test ./internal/providers`、`cd electron && npm run build`、`make build`
+
 - **入站图片媒体管线落地**：新增通用 `internal/media` 管线，QQ/Telegram 入站图片会先解析并缓存到本地，再由 Provider 按模型能力编码；视觉模型优先使用本地缓存图片生成 `data:` URL，非视觉模型保留文本降级，纯图片消息不再触发重工具链绕路下载/OCR
   - `ARCHITECTURE.md`、`internal/bus/events.go`、`internal/media/manager.go`、`internal/media/manager_test.go`、`internal/channels/telegram.go`、`internal/channels/qq.go`、`internal/channels/telegram_media_test.go`、`internal/agent/context.go`、`internal/agent/context_test.go`、`internal/agent/loop.go`、`internal/agent/loop_test.go`、`internal/providers/base.go`、`internal/providers/capabilities.go`、`internal/providers/openai.go`、`internal/providers/openai_test.go`、`internal/cli/gateway.go`
   - 验证：`go test ./internal/media ./internal/providers ./internal/agent ./internal/channels ./internal/cli`、`make build`

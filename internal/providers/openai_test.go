@@ -207,8 +207,8 @@ func TestSupportsImageInputDisablesDeepSeekChat(t *testing.T) {
 	if !SupportsImageInput("deepseek", "deepseek-vl") {
 		t.Fatal("expected deepseek-vl to allow image content parts")
 	}
-	if !SupportsImageInput("zhipu", "glm-5") {
-		t.Fatal("expected glm-5 to allow image content parts")
+	if SupportsImageInput("zhipu", "glm-5") {
+		t.Fatal("expected glm-5 to keep image content parts disabled by fallback")
 	}
 }
 

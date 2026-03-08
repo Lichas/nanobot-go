@@ -69,7 +69,7 @@ export const PRESET_PROVIDERS: Omit<ProviderConfig, 'id' | 'apiKey'>[] = [
     baseURL: 'https://open.bigmodel.cn/api/coding/paas/v4',
     apiFormat: 'openai',
     models: [
-      { id: 'glm-5', name: 'GLM-5', enabled: true, supportsImageInput: true },
+      { id: 'glm-5', name: 'GLM-5', enabled: true },
       { id: 'glm-4.7', name: 'GLM-4.7', enabled: true },
     ],
     enabled: false,
