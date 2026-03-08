@@ -133,7 +133,7 @@ func normalizeInboundUserContent(currentMessage string, media *bus.MediaAttachme
 }
 
 func buildInboundContentParts(content string, media *bus.MediaAttachment) []providers.ContentPart {
-	if media == nil || media.Type != "image" || strings.TrimSpace(media.URL) == "" {
+	if media == nil || media.Type != "image" {
 		return nil
 	}
 
@@ -148,8 +148,10 @@ func buildInboundContentParts(content string, media *bus.MediaAttachment) []prov
 			Text: text,
 		},
 		{
-			Type:     "image_url",
-			ImageURL: strings.TrimSpace(media.URL),
+			Type:      "image_url",
+			ImageURL:  strings.TrimSpace(media.URL),
+			ImagePath: strings.TrimSpace(media.LocalPath),
+			MimeType:  strings.TrimSpace(media.MimeType),
 		},
 	}
 }

@@ -4,14 +4,20 @@ import (
 	"bufio"
 	"bytes"
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
+	"mime"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strings"
 	"time"
 )
+
+const maxInlineImageBytes = 8 * 1024 * 1024
 
 // debug flag - set to false in production
 const debug = false
@@ -417,9 +423,7 @@ func flattenContentParts(msg Message) string {
 	for _, part := range msg.Parts {
 		switch part.Type {
 		case "image_url":
-			if strings.TrimSpace(part.ImageURL) != "" {
-				lines = append(lines, "Image URL: "+strings.TrimSpace(part.ImageURL))
-			}
+			lines = append(lines, "User also attached an image, but the current model cannot inspect images directly.")
 		case "text":
 			text := strings.TrimSpace(part.Text)
 			if text != "" && text != strings.TrimSpace(msg.Content) {
@@ -435,13 +439,14 @@ func convertToChatContentParts(parts []ContentPart) []chatContentPart {
 	for _, part := range parts {
 		switch part.Type {
 		case "image_url":
-			if strings.TrimSpace(part.ImageURL) == "" {
+			imageURL := buildProviderImageURL(part)
+			if strings.TrimSpace(imageURL) == "" {
 				continue
 			}
 			result = append(result, chatContentPart{
 				Type: "image_url",
 				ImageURL: &chatImageURL{
-					URL: part.ImageURL,
+					URL: imageURL,
 				},
 			})
 		default:
@@ -452,6 +457,45 @@ func convertToChatContentParts(parts []ContentPart) []chatContentPart {
 		}
 	}
 	return result
+}
+
+func buildProviderImageURL(part ContentPart) string {
+	if dataURL := buildInlineDataURL(part); dataURL != "" {
+		return dataURL
+	}
+	return strings.TrimSpace(part.ImageURL)
+}
+
+func buildInlineDataURL(part ContentPart) string {
+	path := strings.TrimSpace(part.ImagePath)
+	if path == "" {
+		return ""
+	}
+
+	info, err := os.Stat(path)
+	if err != nil || info.Size() <= 0 || info.Size() > maxInlineImageBytes {
+		return ""
+	}
+
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return ""
+	}
+
+	mimeType := strings.TrimSpace(part.MimeType)
+	if mimeType == "" {
+		if ext := strings.TrimSpace(filepath.Ext(path)); ext != "" {
+			mimeType = mime.TypeByExtension(ext)
+		}
+	}
+	if mimeType == "" {
+		mimeType = http.DetectContentType(data)
+	}
+	if mimeType == "" {
+		mimeType = "application/octet-stream"
+	}
+
+	return "data:" + mimeType + ";base64," + base64.StdEncoding.EncodeToString(data)
 }
 
 // doRequest 执行非流式请求（带重试机制）

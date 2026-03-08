@@ -60,7 +60,7 @@ func TestTelegramBuildInboundMessageUsesCaptionAndDocumentMime(t *testing.T) {
 	require.NotNil(t, msg.Media)
 	assert.Equal(t, "image", msg.Media.Type)
 	assert.Equal(t, "doc-image", msg.Media.FileID)
-	assert.Equal(t, "diagram.png", msg.Media.URL)
+	assert.Equal(t, "diagram.png", msg.Media.Filename)
 	assert.Equal(t, "image/png", msg.Media.MimeType)
 }
 

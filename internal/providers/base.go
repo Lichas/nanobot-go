@@ -5,9 +5,11 @@ import (
 )
 
 type ContentPart struct {
-	Type     string `json:"type"`
-	Text     string `json:"text,omitempty"`
-	ImageURL string `json:"image_url,omitempty"`
+	Type      string `json:"type"`
+	Text      string `json:"text,omitempty"`
+	ImageURL  string `json:"image_url,omitempty"`
+	ImagePath string `json:"image_path,omitempty"`
+	MimeType  string `json:"mime_type,omitempty"`
 }
 
 // Message 消息

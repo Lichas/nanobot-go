@@ -2,6 +2,9 @@ package providers
 
 import (
 	"encoding/json"
+	"os"
+	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -57,7 +60,7 @@ func TestConvertToChatMessagesSupportsImageParts(t *testing.T) {
 			Content: "User sent an image.",
 			Parts: []ContentPart{
 				{Type: "text", Text: "User sent an image."},
-				{Type: "image_url", ImageURL: "https://example.com/test.png"},
+				{Type: "image_url", ImageURL: "https://example.com/test.png", ImagePath: filepath.Join(t.TempDir(), "missing.png")},
 			},
 		},
 	}, true)
@@ -90,6 +93,43 @@ func TestConvertToChatMessagesSupportsImageParts(t *testing.T) {
 	imageURL, ok := imagePart["image_url"].(map[string]interface{})
 	if !ok || imageURL["url"] != "https://example.com/test.png" {
 		t.Fatalf("unexpected image_url payload: %#v", imagePart["image_url"])
+	}
+}
+
+func TestConvertToChatMessagesInlinesLocalImageAsDataURL(t *testing.T) {
+	tmpDir := t.TempDir()
+	imagePath := filepath.Join(tmpDir, "image.png")
+	if err := os.WriteFile(imagePath, []byte("fake image bytes"), 0644); err != nil {
+		t.Fatalf("write image failed: %v", err)
+	}
+
+	converted := convertToChatMessages([]Message{
+		{
+			Role:    "user",
+			Content: "User sent an image.",
+			Parts: []ContentPart{
+				{Type: "text", Text: "User sent an image."},
+				{Type: "image_url", ImagePath: imagePath, MimeType: "image/png"},
+			},
+		},
+	}, true)
+
+	body, err := json.Marshal(converted)
+	if err != nil {
+		t.Fatalf("marshal failed: %v", err)
+	}
+
+	var decoded []map[string]interface{}
+	if err := json.Unmarshal(body, &decoded); err != nil {
+		t.Fatalf("unmarshal failed: %v", err)
+	}
+
+	content := decoded[0]["content"].([]interface{})
+	imagePart := content[1].(map[string]interface{})
+	imageURL := imagePart["image_url"].(map[string]interface{})
+	value, _ := imageURL["url"].(string)
+	if !strings.HasPrefix(value, "data:image/png;base64,") {
+		t.Fatalf("expected inline data URL, got %q", value)
 	}
 }
 
@@ -155,7 +195,7 @@ func TestConvertToChatMessagesFlattensImagePartsWhenModelDoesNotSupportThem(t *t
 	if !ok {
 		t.Fatalf("expected flattened string content, got %T", decoded[0]["content"])
 	}
-	if content != "User sent an image.\nImage URL: https://example.com/test.png" {
+	if content != "User sent an image.\nUser also attached an image, but the current model cannot inspect images directly." {
 		t.Fatalf("unexpected flattened content: %q", content)
 	}
 }

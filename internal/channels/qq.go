@@ -558,6 +558,7 @@ func qqInboundMedia(attachments []qqAttachment) *bus.MediaAttachment {
 			return &bus.MediaAttachment{
 				Type:     "image",
 				URL:      normalizeQQAttachmentURL(attachment.URL),
+				Filename: strings.TrimSpace(attachment.FileName),
 				MimeType: contentType,
 			}
 		}
@@ -571,6 +572,7 @@ func qqInboundMedia(attachments []qqAttachment) *bus.MediaAttachment {
 		return &bus.MediaAttachment{
 			Type:     "document",
 			URL:      url,
+			Filename: strings.TrimSpace(attachment.FileName),
 			MimeType: strings.TrimSpace(attachment.ContentType),
 		}
 	}

@@ -73,6 +73,83 @@ vercel --prod --yes
     - 路由：私聊发送人使用 `author.user_openid` 作为 `sender/chat_id`
     - 出站：通过 `/v2/users/{openid}/messages` 被动回复，并复用最近一条入站 `msg_id`
     - 白名单：`allowFrom` 对官方 QQBot 应填写 OpenID，而不是腾讯控制台里展示的原始 QQ 号
+- **Media Pipeline (`internal/media`)**：
+  - 负责把“渠道侧媒体引用”转换为“模型侧稳定媒体资产”
+  - 入站图片/文件先落本地缓存，再由 Provider 按模型能力编码
+  - 避免让 LLM 在运行时自己调用 `web_fetch/browser/exec` 去追临时下载链接
+
+### 入站媒体管线
+
+当前渠道（尤其 QQ）上的图片通常以临时 URL 或渠道特定 `file_id` 形式到达。它们不应该直接作为原始输入暴露给模型层，否则会出现三类问题：
+
+- URL 有时效，晚取可能失效
+- 不同模型支持的媒体输入格式不同（远程 URL / `data:` URL / 纯文本）
+- 模型在看不到图片时，容易自行触发 `web_fetch / browser / exec / OCR` 等重工具链，导致高延迟和卡死
+
+因此，maxclaw 的入站媒体处理采用三层分离：
+
+1. **Channel 层：产出媒体引用**
+   - 渠道只负责识别“这是图片/文件”以及附带的原始引用信息
+   - 不在 `internal/channels/*` 中做模型兼容逻辑
+   - 输出统一的 `bus.MediaAttachment`
+
+2. **Media 层：解析与缓存**
+   - `internal/media.Manager` 按渠道选择 resolver
+   - 将临时 URL / `file_id` 解析为稳定的本地缓存文件
+   - 输出补全后的 `MediaAttachment`（含本地路径、文件名、MIME）
+   - 当前首批 resolver：
+     - `QQResolver`：下载官方临时图片 URL
+     - `TelegramResolver`：用 Bot API `getFile` 将 `file_id` 解析为可下载文件，再缓存
+
+3. **Provider 层：按模型能力编码**
+   - 视觉模型：优先读取本地缓存文件，编码为 provider 兼容的图片输入
+     - 现阶段 OpenAI 兼容 Provider 统一转为 `data:` URL（base64 内联）
+   - 非视觉模型：不接收图片 part，而是降级为文本提示
+   - 这样既能支持支持图片的大模型，也能避免纯文本模型被错误的图片 payload 打挂
+
+### 媒体数据模型
+
+`bus.MediaAttachment` 作为跨层传输对象，分为三类字段：
+
+- **渠道原始引用**
+  - `url`：渠道侧原始下载地址（如果有）
+  - `fileId`：渠道侧文件 ID（如 Telegram）
+- **解析后稳定资产**
+  - `localPath`：本地缓存文件路径
+  - `filename`：缓存或原始文件名
+  - `mimeType`：媒体 MIME
+- **媒体语义**
+  - `type`：`image / document / audio / video`
+
+### 端到端数据流
+
+```mermaid
+flowchart LR
+  A["QQ / Telegram inbound event"] --> B["internal/channels/*"]
+  B --> C["bus.MediaAttachment (raw ref)"]
+  C --> D["internal/media.Manager"]
+  D --> E["resolver stage to local cache"]
+  E --> F["bus.MediaAttachment (staged)"]
+  F --> G["internal/agent/context"]
+  G --> H["internal/providers/* formatter"]
+  H --> I["LLM request"]
+```
+
+### 设计原则
+
+- **渠道无模型知识**：渠道只识别媒体，不知道模型是否支持视觉
+- **Provider 无渠道知识**：Provider 只消费标准化后的本地媒体资产
+- **优先本地缓存**：对带时效的下载 URL，入站即缓存，避免后续过期
+- **显式能力判断**：模型是否支持图片输入由 `providers.SupportsImageInput` 决定
+- **可插拔 resolver**：新增渠道只需注册新的 resolver，不改 Agent 主流程
+- **渐进降级**：视觉模型走图片输入；非视觉模型走文本降级；必要时可增加 OCR 中间层，但不由 LLM 自行触发
+
+### 第一阶段实现范围
+
+- 接入 QQ / Telegram 入站图片缓存
+- OpenAI 兼容 Provider 将本地图片编码为 `data:` URL
+- 非视觉模型自动降级为文本，不向模型注入图片 part
+- 纯图片消息在非视觉模型下直接快速回复，不再触发重工具链
 - **Web UI (`webui/` / `electron/`)**：
   - **Web 版本**：前端打包后由 Gateway 静态托管（同端口 18890）
   - **Electron 版本**：独立桌面应用，通过 HTTP API + WebSocket 与 Gateway 通信

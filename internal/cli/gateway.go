@@ -15,6 +15,7 @@ import (
 	"github.com/Lichas/maxclaw/internal/config"
 	"github.com/Lichas/maxclaw/internal/cron"
 	"github.com/Lichas/maxclaw/internal/logging"
+	"github.com/Lichas/maxclaw/internal/media"
 	"github.com/Lichas/maxclaw/internal/memory"
 	"github.com/Lichas/maxclaw/internal/providers"
 	"github.com/Lichas/maxclaw/internal/webui"
@@ -93,9 +94,11 @@ var gatewayCmd = &cobra.Command{
 
 		// 创建频道注册表
 		channelRegistry := channels.NewRegistry()
+		mediaManager := media.NewManager(filepath.Join(config.GetDataDir(), "media", "inbound"))
 
 		// 注册 Telegram
 		if cfg.Channels.Telegram.Enabled {
+			mediaManager.Register("telegram", media.NewTelegramResolver(filepath.Join(config.GetDataDir(), "media", "inbound"), cfg.Channels.Telegram.Token, cfg.Channels.Telegram.Proxy))
 			tgChannel := channels.NewTelegramChannel(&channels.TelegramConfig{
 				Token:     cfg.Channels.Telegram.Token,
 				Enabled:   cfg.Channels.Telegram.Enabled,
@@ -105,7 +108,7 @@ var gatewayCmd = &cobra.Command{
 			tgChannel.SetMessageHandler(func(msg *channels.Message) {
 				// 转发到消息总线
 				inboundMsg := bus.NewInboundMessage("telegram", msg.Sender, msg.ChatID, msg.Text)
-				inboundMsg.Media = msg.Media
+				inboundMsg.Media = stageInboundMedia(mediaManager, "telegram", msg.Media)
 				messageBus.PublishInbound(inboundMsg)
 			})
 			channelRegistry.Register(tgChannel)
@@ -204,6 +207,7 @@ var gatewayCmd = &cobra.Command{
 
 		// 注册 QQ（腾讯官方 QQBot）
 		if cfg.Channels.QQ.Enabled {
+			mediaManager.Register("qq", media.NewQQResolver(filepath.Join(config.GetDataDir(), "media", "inbound"), nil))
 			qqChannel := channels.NewQQChannel(&channels.QQConfig{
 				Enabled:     cfg.Channels.QQ.Enabled,
 				AppID:       cfg.Channels.QQ.AppID,
@@ -216,7 +220,7 @@ var gatewayCmd = &cobra.Command{
 			})
 			qqChannel.SetMessageHandler(func(msg *channels.Message) {
 				inboundMsg := bus.NewInboundMessage("qq", msg.Sender, msg.ChatID, msg.Text)
-				inboundMsg.Media = msg.Media
+				inboundMsg.Media = stageInboundMedia(mediaManager, "qq", msg.Media)
 				messageBus.PublishInbound(inboundMsg)
 			})
 			channelRegistry.Register(qqChannel)
@@ -342,6 +346,21 @@ var gatewayCmd = &cobra.Command{
 
 		return nil
 	},
+}
+
+func stageInboundMedia(manager *media.Manager, channel string, attachment *bus.MediaAttachment) *bus.MediaAttachment {
+	if manager == nil || attachment == nil {
+		return attachment
+	}
+
+	staged, err := manager.StageInbound(context.Background(), channel, attachment)
+	if err != nil {
+		if lg := logging.Get(); lg != nil && lg.Channels != nil {
+			lg.Channels.Printf("stage inbound media failed channel=%s type=%s err=%v", channel, attachment.Type, err)
+		}
+		return attachment
+	}
+	return staged
 }
 
 func buildGatewayProvider(cfg *config.Config, apiKey, apiBase string) (providers.LLMProvider, string, error) {

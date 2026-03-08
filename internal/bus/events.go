@@ -2,10 +2,12 @@ package bus
 
 // MediaAttachment 媒体附件
 type MediaAttachment struct {
-	Type     string `json:"type"` // image, audio, video, document
-	URL      string `json:"url,omitempty"`
-	FileID   string `json:"fileId,omitempty"`
-	MimeType string `json:"mimeType,omitempty"`
+	Type      string `json:"type"` // image, audio, video, document
+	URL       string `json:"url,omitempty"`
+	FileID    string `json:"fileId,omitempty"`
+	Filename  string `json:"filename,omitempty"`
+	LocalPath string `json:"localPath,omitempty"`
+	MimeType  string `json:"mimeType,omitempty"`
 }
 
 // InboundMessage 入站消息

@@ -189,9 +189,10 @@ func TestContextBuilderBuildsImagePartsForInboundMedia(t *testing.T) {
 	builder := NewContextBuilder(workspace)
 
 	messages := builder.BuildMessages(nil, "[Image]", &bus.MediaAttachment{
-		Type:     "image",
-		URL:      "https://example.com/image.png",
-		MimeType: "image/png",
+		Type:      "image",
+		URL:       "https://example.com/image.png",
+		LocalPath: "/tmp/image.png",
+		MimeType:  "image/png",
 	}, "qq", "openid")
 
 	require.Len(t, messages, 2)
@@ -201,4 +202,5 @@ func TestContextBuilderBuildsImagePartsForInboundMedia(t *testing.T) {
 	assert.Equal(t, "User sent an image.", messages[1].Parts[0].Text)
 	assert.Equal(t, "image_url", messages[1].Parts[1].Type)
 	assert.Equal(t, "https://example.com/image.png", messages[1].Parts[1].ImageURL)
+	assert.Equal(t, "/tmp/image.png", messages[1].Parts[1].ImagePath)
 }

@@ -308,8 +308,8 @@ func telegramInboundMedia(message telegramMessage) *bus.MediaAttachment {
 	return &bus.MediaAttachment{
 		Type:     mediaType,
 		FileID:   strings.TrimSpace(message.Document.FileID),
+		Filename: strings.TrimSpace(message.Document.FileName),
 		MimeType: mimeType,
-		URL:      strings.TrimSpace(message.Document.FileName),
 	}
 }
 
