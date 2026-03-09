@@ -22,7 +22,7 @@ Language: **中文** | [English](README.md)
 
 ## 📸 产品截图
 
-![maxclaw app ui](screenshot/app_ui.png)
+![maxclaw app ui](screenshot/app_ui2.png)
 
 > 图：maxclaw 桌面 UI（会话、设置、日志与工具联动界面）
 

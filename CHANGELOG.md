@@ -4,6 +4,10 @@
 
 ### Added
 
+- **README 截图更新为新的桌面界面预览**：将中英文 README 的产品截图切换为新的 `app_ui2.png` 画面，和当前桌面 UI 保持一致
+  - `README.md`、`README.zh.md`、`screenshot/app_ui2.png`
+  - 验证：`make build`
+
 - **MaxClaw 桌面 GUI 重做为 Codex 风格工作台**：重塑 Electron 壳层、左侧控制栏与聊天线程视图，引入新的桌面级视觉系统、本地字体资源和更强的启动页/消息编排，让 MaxClaw 以更接近 Codex Desktop 的控制台体验承载现有 Gateway 会话流
   - `electron/src/renderer/App.tsx`、`electron/src/renderer/components/Sidebar.tsx`、`electron/src/renderer/views/ChatView.tsx`、`electron/src/renderer/styles/globals.css`、`electron/public/fonts/*`
   - 验证：`cd electron && npm run build`、`make build`

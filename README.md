@@ -22,7 +22,7 @@ SEO keywords: `Go AI Agent`, `local AI assistant`, `self-hosted AI agent`, `priv
 
 ## Product Screenshot
 
-![maxclaw app ui](screenshot/app_ui.png)
+![maxclaw app ui](screenshot/app_ui2.png)
 
 ---
 
