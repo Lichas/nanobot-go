@@ -190,31 +190,6 @@ kbd {
   position: relative;
 }
 
-.desktop-shell::before {
-  content: "";
-  position: absolute;
-  inset: 18px;
-  border-radius: 40px;
-  background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.2), transparent 42%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.26), rgba(255, 255, 255, 0.08));
-  opacity: 0.9;
-  pointer-events: none;
-}
-
-.desktop-glow {
-  position: absolute;
-  inset: auto;
-  right: 10%;
-  top: 6%;
-  width: 380px;
-  height: 380px;
-  border-radius: 999px;
-  background: radial-gradient(circle, rgba(184, 103, 63, 0.24), transparent 62%);
-  filter: blur(20px);
-  pointer-events: none;
-}
-
 .desktop-panel::before {
   content: "";
   position: absolute;

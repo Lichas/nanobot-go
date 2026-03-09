@@ -102,9 +102,8 @@ function App() {
   };
 
   return (
-    <div className="desktop-shell h-screen overflow-hidden px-3 py-3 text-foreground md:px-5 md:py-5">
-      <div className="desktop-glow" />
-      <div className="desktop-panel relative flex h-full gap-3 overflow-hidden rounded-[34px] border border-white/55 bg-white/62 shadow-[0_32px_100px_rgba(25,34,52,0.2)] backdrop-blur-2xl">
+    <div className="desktop-shell h-screen overflow-hidden text-foreground">
+      <div className="desktop-panel relative flex h-full w-full gap-3 overflow-hidden bg-white/62 backdrop-blur-2xl">
         <div className={`absolute z-10 draggable ${isMac ? 'h-14' : 'h-12'}`} style={dragStripStyle} />
         <div className="absolute z-40 flex items-center gap-2 no-drag" style={controlAnchorStyle}>
           <button

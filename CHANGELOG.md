@@ -32,6 +32,10 @@
 
 ### Fixed
 
+- **桌面窗口外层底板移除**：移除 Electron renderer 里额外的外边距、内嵌底板和装饰发光层，让主界面直接贴合窗口边界，不再出现“APP 外还有一层底”的视觉
+  - `electron/src/renderer/App.tsx`、`electron/src/renderer/styles/globals.css`
+  - 验证：`cd electron && npm run build`、`make build`
+
 - **Electron renderer 构建路径兼容性修复**：移除 `vite.renderer.config.ts` 中多余的显式 HTML `input` 配置，避免在更严格的 Vite/Rollup 组合下把 `../index.html` 解析为非法输出名，导致桌面前端构建失败
   - `electron/vite.renderer.config.ts`
   - 验证：`cd electron && npm run build`、`make build`
@@ -70,6 +74,10 @@
 
 - **技能市场安装按钮命中区域放大**：将右上角“安装技能”改为更明确的大按钮，整个可见胶囊区域都可点击，避免只剩文字附近能触发
   - `electron/src/renderer/views/SkillsView.tsx`
+  - 验证：`cd electron && npm run build`、`make build`
+
+- **桌面窗口外层底板移除**：去掉窗口内额外的外边距和包裹底板，让主界面直接贴合 Electron 窗口边界，不再出现“APP 外还有一层底”的视觉
+  - `electron/src/renderer/App.tsx`、`electron/src/renderer/styles/globals.css`
   - 验证：`cd electron && npm run build`、`make build`
 
 - **工具执行图标二次修正**：将时间线中仍然抽象失真的“工具”图标替换为标准扳手轮廓，保证在小尺寸下也能被正确识别
