@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, setStatus, setActiveTab, setTheme, setLanguage, setCurrentSessionKey, toggleSidebar } from './store';
 import { Sidebar } from './components/Sidebar';
@@ -9,13 +9,10 @@ import { SkillsView } from './views/SkillsView';
 import { MCPView } from './views/MCPView';
 import { SettingsView } from './views/SettingsView';
 import { wsClient } from './services/websocket';
-import { useTranslation } from './i18n';
 
 function App() {
   const dispatch = useDispatch();
-  const { t, language } = useTranslation();
   const { activeTab, theme, sidebarCollapsed } = useSelector((state: RootState) => state.ui);
-  const { status } = useSelector((state: RootState) => state.gateway);
   const isMac = window.electronAPI.platform.isMac;
   const controlAnchorStyle = isMac
     ? { left: '92px', top: '10px' }
@@ -23,35 +20,6 @@ function App() {
   const dragStripStyle = isMac
     ? { left: '176px', right: '0px', top: '0px' }
     : { left: '120px', right: '0px', top: '0px' };
-  const statusLabel = useMemo(() => {
-    const labels = {
-      zh: {
-        running: 'Gateway 在线',
-        stopped: 'Gateway 离线',
-        starting: 'Gateway 启动中',
-        error: 'Gateway 异常'
-      },
-      en: {
-        running: 'Gateway online',
-        stopped: 'Gateway offline',
-        starting: 'Gateway starting',
-        error: 'Gateway error'
-      }
-    };
-
-    return labels[language][status] || status;
-  }, [language, status]);
-  const activeTabLabel = useMemo(() => {
-    const map = {
-      chat: t('nav.chat'),
-      sessions: t('nav.sessions'),
-      scheduled: t('nav.scheduled'),
-      skills: t('nav.skills'),
-      mcp: t('nav.mcp'),
-      settings: t('nav.settings')
-    };
-    return map[activeTab];
-  }, [activeTab, t]);
 
   useEffect(() => {
     dispatch(setCurrentSessionKey(`desktop:${Date.now()}`));
@@ -157,18 +125,6 @@ function App() {
               <PencilIcon className="h-4 w-4" />
             </button>
           )}
-        </div>
-        <div className="absolute right-4 top-4 z-40 flex items-center gap-2 no-drag">
-          <div className="hidden items-center gap-2 rounded-full border border-white/70 bg-white/76 px-3 py-1.5 text-[11px] font-medium tracking-[0.16em] text-foreground/58 shadow-[0_10px_30px_rgba(31,41,55,0.08)] md:flex">
-            <span className={`status-dot ${status}`} />
-            {statusLabel}
-          </div>
-          <div className="hidden rounded-full border border-white/70 bg-white/76 px-3 py-1.5 text-[11px] font-medium tracking-[0.16em] text-foreground/58 shadow-[0_10px_30px_rgba(31,41,55,0.08)] md:block">
-            {activeTabLabel}
-          </div>
-          <div className="rounded-full border border-white/70 bg-[#192233] px-3 py-1.5 text-[11px] font-semibold tracking-[0.22em] text-white shadow-[0_12px_34px_rgba(25,34,51,0.28)]">
-            MAXCLAW
-          </div>
         </div>
         <Sidebar />
         <main className="mr-2 flex-1 overflow-hidden rounded-[30px] bg-transparent">

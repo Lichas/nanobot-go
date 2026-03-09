@@ -2084,94 +2084,29 @@ export function ChatView() {
         {renderThreadHeader()}
         <div className="flex min-h-0 flex-1">
           <div className="flex-1 overflow-y-auto px-8 py-8 md:px-10 md:py-10">
-            <div className="mx-auto max-w-6xl">
-              <section className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_360px]">
-                <div className="rounded-[34px] border border-white/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.88),rgba(250,244,236,0.82))] p-6 shadow-[0_28px_70px_rgba(28,36,50,0.1)] dark:bg-[linear-gradient(180deg,rgba(24,31,45,0.92),rgba(20,27,39,0.9))] md:p-8">
-                  <div className="flex flex-wrap items-start justify-between gap-4">
-                    <div className="max-w-2xl">
-                      <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-[22px] bg-[#192233] shadow-[0_18px_44px_rgba(25,34,51,0.18)]">
-                        <img
-                          src="./icon.png"
-                          alt="maxclaw"
-                          className="h-11 w-11 object-contain"
-                        />
-                      </div>
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-foreground/42">
-                        Local-first operator
-                      </p>
-                      <h1 className="mt-3 text-[44px] font-semibold tracking-[-0.06em] text-foreground">
-                        {t('chat.starter.title')}
-                      </h1>
-                      <p className="mt-4 max-w-xl text-[17px] leading-8 text-foreground/62">
-                        {t('chat.starter.subtitle')}
-                      </p>
-                    </div>
-                    <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
-                      <div className="rounded-[24px] border border-white/70 bg-white/78 px-4 py-4 shadow-[0_14px_34px_rgba(28,36,50,0.06)] dark:bg-white/5">
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-foreground/42">
-                          {language === 'zh' ? '工作空间' : 'Workspace'}
-                        </p>
-                        <p className="mt-3 text-lg font-semibold tracking-[-0.03em] text-foreground">{workspaceLabel}</p>
-                        <p className="mt-1 text-sm text-foreground/52">
-                          {workspacePath || (language === 'zh' ? '未配置默认工作目录' : 'No default workspace configured')}
-                        </p>
-                      </div>
-                      <div className="rounded-[24px] border border-white/70 bg-white/78 px-4 py-4 shadow-[0_14px_34px_rgba(28,36,50,0.06)] dark:bg-white/5">
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-foreground/42">
-                          {language === 'zh' ? '模型' : 'Model'}
-                        </p>
-                        <p className="mt-3 text-lg font-semibold tracking-[-0.03em] text-foreground">
-                          {currentModel || (language === 'zh' ? '自动选择' : 'Auto')}
-                        </p>
-                        <p className="mt-1 text-sm text-foreground/52">
-                          {language === 'zh' ? '可在下方快速切换' : 'Switch quickly in the composer below'}
-                        </p>
-                      </div>
-                      <div className="rounded-[24px] border border-white/70 bg-white/78 px-4 py-4 shadow-[0_14px_34px_rgba(28,36,50,0.06)] dark:bg-white/5">
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-foreground/42">
-                          {language === 'zh' ? '执行状态' : 'Execution'}
-                        </p>
-                        <p className="mt-3 text-lg font-semibold tracking-[-0.03em] text-foreground">{gatewayStatusMeta.label}</p>
-                        <p className="mt-1 text-sm text-foreground/52">
-                          {language === 'zh'
-                            ? '连接现有 Gateway，继续复用会话、技能与浏览器能力'
-                            : 'Connected to the existing Gateway, sessions, skills, and browser tools'}
-                        </p>
-                      </div>
-                    </div>
+            <div className="mx-auto max-w-4xl">
+              <section className="rounded-[34px] border border-white/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.88),rgba(250,244,236,0.82))] p-6 shadow-[0_28px_70px_rgba(28,36,50,0.1)] dark:bg-[linear-gradient(180deg,rgba(24,31,45,0.92),rgba(20,27,39,0.9))] md:p-8">
+                <div className="max-w-2xl">
+                  <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-[22px] bg-[#192233] shadow-[0_18px_44px_rgba(25,34,51,0.18)]">
+                    <img
+                      src="./icon.png"
+                      alt="maxclaw"
+                      className="h-11 w-11 object-contain"
+                    />
                   </div>
-
-                  <div className="mt-8">
-                    {renderComposer(true)}
-                  </div>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-foreground/42">
+                    Local-first operator
+                  </p>
+                  <h1 className="mt-3 text-[44px] font-semibold tracking-[-0.06em] text-foreground">
+                    {t('chat.starter.title')}
+                  </h1>
+                  <p className="mt-4 max-w-xl text-[17px] leading-8 text-foreground/62">
+                    {t('chat.starter.subtitle')}
+                  </p>
                 </div>
 
-                <div className="grid gap-4">
-                  <div className="rounded-[30px] border border-white/70 bg-[#192233] px-5 py-5 text-white shadow-[0_26px_60px_rgba(25,34,51,0.22)]">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-white/58">
-                      {language === 'zh' ? '工作方式' : 'Workflow'}
-                    </p>
-                    <div className="mt-4 space-y-3">
-                      <div className="rounded-[22px] border border-white/10 bg-white/6 px-4 py-3">
-                        <p className="text-sm font-semibold">{language === 'zh' ? '1. 描述目标' : '1. Describe the mission'}</p>
-                        <p className="mt-1 text-sm leading-6 text-white/68">
-                          {language === 'zh' ? '写清楚目标、约束、输出格式和完成标准。' : 'Define the goal, constraints, output shape, and acceptance bar.'}
-                        </p>
-                      </div>
-                      <div className="rounded-[22px] border border-white/10 bg-white/6 px-4 py-3">
-                        <p className="text-sm font-semibold">{language === 'zh' ? '2. 让 MaxClaw 执行' : '2. Let MaxClaw execute'}</p>
-                        <p className="mt-1 text-sm leading-6 text-white/68">
-                          {language === 'zh' ? '它会读取文件、调用工具、更新预览，并把关键进展写回线程。' : 'It reads files, calls tools, updates previews, and records progress in the thread.'}
-                        </p>
-                      </div>
-                      <div className="rounded-[22px] border border-white/10 bg-white/6 px-4 py-3">
-                        <p className="text-sm font-semibold">{language === 'zh' ? '3. 在需要时插手' : '3. Intervene only when needed'}</p>
-                        <p className="mt-1 text-sm leading-6 text-white/68">
-                          {language === 'zh' ? '登录、验证码或外部审批出现时，右侧预览与终端会保留全部上下文。' : 'If login, captcha, or manual approval appears, the preview and terminal keep the full context.'}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
+                <div className="mt-8">
+                  {renderComposer(true)}
                 </div>
               </section>
 

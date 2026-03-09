@@ -40,6 +40,10 @@
   - `electron/src/main/gateway.ts`、`electron/src/main/ipc.ts`
   - 验证：`cd electron && npm run build`、`make build`
 
+- **新建任务页冗余信息收口**：移除启动页右上角浮动标签、右侧“工作方式”栏和标题区摘要卡片，只保留核心标题、输入面板和模板入口，减少首屏噪音
+  - `electron/src/renderer/App.tsx`、`electron/src/renderer/views/ChatView.tsx`
+  - 验证：`cd electron && npm run build`、`make build`
+
 - **模型级多模态能力改为配置驱动**：新增 `providers.<name>.models[].supportsImageInput`，Provider 运行时优先读取显式模型能力，设置页新增 `Multimodal` 开关，Agent 不再按模型名提前短路 QQ/Telegram 纯图片消息；未声明时仍保留启发式回退
   - `internal/config/schema.go`、`internal/config/schema_test.go`、`internal/providers/base.go`、`internal/providers/openai.go`、`internal/providers/openai_test.go`、`internal/agent/loop.go`、`internal/agent/loop_test.go`、`internal/cli/agent.go`、`internal/cli/cron.go`、`internal/cli/gateway.go`、`internal/webui/server.go`、`electron/src/renderer/types/providers.ts`、`electron/src/renderer/components/ProviderEditor.tsx`、`electron/src/renderer/views/SettingsView.tsx`、`ARCHITECTURE.md`
   - 验证：`go test ./internal/config ./internal/providers ./internal/agent ./internal/cli ./internal/webui`、`cd electron && npm run build`、`make build`
