@@ -36,6 +36,10 @@
   - `internal/agent/loop.go`、`internal/webui/server.go`、`internal/webui/server_test.go`
   - 验证：`go test ./internal/agent ./internal/webui`、`make build`
 
+- **独立 gateway 二进制与 Electron 打包对齐**：新增 `cmd/maxclaw-gateway` 独立入口，`make build` 同时产出 `maxclaw` 与 `maxclaw-gateway`，Electron 安装包改为内置并优先启动 `maxclaw-gateway`
+  - `cmd/maxclaw-gateway/main.go`、`internal/cli/root.go`、`Makefile`、`electron/electron-builder.yml`、`electron/src/main/gateway.ts`
+  - 验证：`make build`、`cd electron && npm run build`
+
 - **入站图片媒体管线落地**：新增通用 `internal/media` 管线，QQ/Telegram 入站图片会先解析并缓存到本地，再由 Provider 按模型能力编码；视觉模型优先使用本地缓存图片生成 `data:` URL，非视觉模型保留文本降级，纯图片消息不再触发重工具链绕路下载/OCR
   - `ARCHITECTURE.md`、`internal/bus/events.go`、`internal/media/manager.go`、`internal/media/manager_test.go`、`internal/channels/telegram.go`、`internal/channels/qq.go`、`internal/channels/telegram_media_test.go`、`internal/agent/context.go`、`internal/agent/context_test.go`、`internal/agent/loop.go`、`internal/agent/loop_test.go`、`internal/providers/base.go`、`internal/providers/capabilities.go`、`internal/providers/openai.go`、`internal/providers/openai_test.go`、`internal/cli/gateway.go`
   - 验证：`go test ./internal/media ./internal/providers ./internal/agent ./internal/channels ./internal/cli`、`make build`

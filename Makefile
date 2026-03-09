@@ -1,9 +1,11 @@
-.PHONY: build test clean install fmt vet lint coverage bridge bridge-install bridge-build bridge-run webui-install webui-build webui-dev webfetch-install up up-daemon down-daemon restart-daemon docker-build docker-run
+.PHONY: build build-cli build-gateway test clean install fmt vet lint coverage bridge bridge-install bridge-build bridge-run webui-install webui-build webui-dev webfetch-install up up-daemon down-daemon restart-daemon docker-build docker-run
 
 # 变量
 BINARY_NAME=maxclaw
+GATEWAY_BINARY_NAME=maxclaw-gateway
 BUILD_DIR=build
 MAIN_FILE=cmd/maxclaw/main.go
+GATEWAY_MAIN_FILE=cmd/maxclaw-gateway/main.go
 BRIDGE_DIR=bridge
 BRIDGE_PORT?=3001
 WEBFETCH_DIR=webfetcher
@@ -16,11 +18,22 @@ build:
 	@echo "Building..."
 	@mkdir -p $(BUILD_DIR)
 	go build -o $(BUILD_DIR)/$(BINARY_NAME) $(MAIN_FILE)
+	go build -o $(BUILD_DIR)/$(GATEWAY_BINARY_NAME) $(GATEWAY_MAIN_FILE)
 	@echo "Build complete: $(BUILD_DIR)/$(BINARY_NAME)"
+	@echo "Build complete: $(BUILD_DIR)/$(GATEWAY_BINARY_NAME)"
+
+build-cli:
+	@mkdir -p $(BUILD_DIR)
+	go build -o $(BUILD_DIR)/$(BINARY_NAME) $(MAIN_FILE)
+
+build-gateway:
+	@mkdir -p $(BUILD_DIR)
+	go build -o $(BUILD_DIR)/$(GATEWAY_BINARY_NAME) $(GATEWAY_MAIN_FILE)
 
 # 安装到 GOPATH/bin
 install:
 	go install ./cmd/maxclaw
+	go install ./cmd/maxclaw-gateway
 
 # 运行测试
 test:
@@ -142,6 +155,8 @@ electron-dist-linux: build
 help:
 	@echo "Available targets:"
 	@echo "  build      - Build the binary"
+	@echo "  build-cli  - Build the CLI binary"
+	@echo "  build-gateway - Build the standalone gateway binary"
 	@echo "  test       - Run tests"
 	@echo "  coverage   - Run tests with coverage"
 	@echo "  install    - Install to GOPATH/bin"

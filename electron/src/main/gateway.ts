@@ -187,20 +187,25 @@ export class GatewayManager {
   private getBinaryPath(): string {
     const platform = os.platform();
     const ext = platform === 'win32' ? '.exe' : '';
-    const binaryName = `maxclaw${ext}`;
+    const gatewayBinaryName = `maxclaw-gateway${ext}`;
+    const cliBinaryName = `maxclaw${ext}`;
 
     if (app.isPackaged) {
-      return path.join(process.resourcesPath, 'bin', binaryName);
+      return path.join(process.resourcesPath, 'bin', gatewayBinaryName);
     }
 
     const overrideBinaryPath = process.env.MAXCLAW_BINARY_PATH || process.env.NANOBOT_BINARY_PATH;
     const appPath = app.getAppPath();
     const candidates = [
       overrideBinaryPath,
-      path.resolve(appPath, '..', 'build', binaryName),
-      path.resolve(appPath, 'build', binaryName),
-      path.resolve(process.cwd(), '..', 'build', binaryName),
-      path.resolve(process.cwd(), 'build', binaryName)
+      path.resolve(appPath, '..', 'build', gatewayBinaryName),
+      path.resolve(appPath, 'build', gatewayBinaryName),
+      path.resolve(process.cwd(), '..', 'build', gatewayBinaryName),
+      path.resolve(process.cwd(), 'build', gatewayBinaryName),
+      path.resolve(appPath, '..', 'build', cliBinaryName),
+      path.resolve(appPath, 'build', cliBinaryName),
+      path.resolve(process.cwd(), '..', 'build', cliBinaryName),
+      path.resolve(process.cwd(), 'build', cliBinaryName)
     ].filter((candidate): candidate is string => Boolean(candidate));
 
     const existingPath = candidates.find(candidate => fs.existsSync(candidate));
@@ -258,7 +263,7 @@ export class GatewayManager {
       return;
     }
 
-    const pgrepResult = spawnSync('pgrep', ['-f', 'maxclaw gateway -p 18890'], {
+    const pgrepResult = spawnSync('pgrep', ['-f', 'maxclaw(-gateway)?( gateway)? -p 18890'], {
       encoding: 'utf8'
     });
 

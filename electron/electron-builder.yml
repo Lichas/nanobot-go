@@ -9,8 +9,8 @@ files:
   - assets/**/*
   - package.json
 extraResources:
-  - from: ../build/maxclaw${ext}
-    to: bin/maxclaw${ext}
+  - from: ../build/maxclaw-gateway${ext}
+    to: bin/maxclaw-gateway${ext}
 mac:
   icon: assets/icon.icns
   category: public.app-category.productivity

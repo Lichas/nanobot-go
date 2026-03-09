@@ -23,6 +23,12 @@ func Execute() error {
 	return rootCmd.Execute()
 }
 
+// ExecuteGateway runs the gateway command as a standalone binary entrypoint.
+func ExecuteGateway() error {
+	gatewayCmd.Use = "maxclaw-gateway"
+	return gatewayCmd.Execute()
+}
+
 func init() {
 	rootCmd.AddCommand(onboardCmd)
 	rootCmd.AddCommand(agentCmd)
