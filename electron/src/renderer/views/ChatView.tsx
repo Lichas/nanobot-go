@@ -2424,12 +2424,11 @@ function ActivityTypeIcon({ className, type }: { className?: string; type: Strea
 
   return (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <circle cx="8" cy="12" r="2.7" strokeWidth={1.8} />
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
         strokeWidth={1.8}
-        d="M10.6 12h5.1m0 0 2.1-2.1m-2.1 2.1 2.1 2.1M5.3 9.3V7.1m0 9.8v-2.2"
+        d="M14.8 6.2a3.1 3.1 0 01-4.2 4.2l-5 5a1.4 1.4 0 101.98 1.98l5-5a3.1 3.1 0 004.2-4.2l-1.66 1.67-1.82-.35-.35-1.82 1.85-1.48z"
       />
     </svg>
   );
