@@ -175,10 +175,12 @@ export function SkillsView() {
           </div>
           <div className="relative z-20 no-drag">
             <button
+              type="button"
               onClick={() => setInstallModalOpen(true)}
-              className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+              className="inline-flex h-11 items-center gap-2 rounded-2xl bg-primary px-5 text-sm font-semibold text-primary-foreground shadow-[0_14px_34px_rgba(184,103,63,0.22)] transition-transform duration-150 hover:-translate-y-0.5 hover:bg-primary/90"
             >
-              + {t('skills.install')}
+              <span className="text-base leading-none">+</span>
+              <span>{t('skills.install')}</span>
             </button>
           </div>
         </div>
