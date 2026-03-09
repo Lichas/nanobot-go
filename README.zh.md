@@ -109,7 +109,20 @@ make build && make restart-daemon && make electron-start
 2. 构建：`make build`
 3. 初始化：`./build/maxclaw onboard`
 4. 配置：编辑 `~/.maxclaw/config.json`
-5. 启动：`./build/maxclaw gateway`
+5. 启动：`./build/maxclaw-gateway -p 18890`
+
+构建产物说明：
+- `./build/maxclaw`：完整 CLI，包含 `onboard`、`skills`、`telegram bind`、`gateway` 等子命令
+- `./build/maxclaw-gateway`：独立后端二进制，适合桌面端打包或无 GUI 部署
+
+开发期常用重启命令：
+
+```bash
+make dev-gateway
+make backend-restart
+make dev-electron
+make electron-restart
+```
 
 Agent CLI 常用参数：
 - `--session/-s` 指定会话 ID（默认 `cli:direct`）
@@ -318,7 +331,7 @@ Gateway 启动后会开启每日汇总器（每小时检查一次），自动把
 Web UI 与 API 同端口，默认 `18890`：
 
 1. 构建：`make webui-install && make webui-build`
-2. 启动：`./build/maxclaw gateway`
+2. 启动：`./build/maxclaw-gateway -p 18890`
 3. 访问：`http://localhost:18890`
 
 如果访问显示 `Web UI not built`，请先运行 `make webui-build`。
@@ -578,7 +591,11 @@ make down-daemon
 2. Build: `make build`
 3. Init: `./build/maxclaw onboard`
 4. Configure: edit `~/.maxclaw/config.json`
-5. Run: `./build/maxclaw gateway`
+5. Run: `./build/maxclaw-gateway -p 18890`
+
+Built binaries:
+- `./build/maxclaw`: full CLI for onboarding, skills, channel binding, and maintenance commands
+- `./build/maxclaw-gateway`: standalone backend for desktop packaging or headless deployment
 
 ## One-Command Install (Linux / macOS)
 Use the auto-switch installer (it dispatches to `install_linux.sh` or `install_mac.sh`):
@@ -708,7 +725,7 @@ When asking the agent in chat to install skills, explicitly request `exec` with 
 Web UI and API share the same port (default `18890`).
 
 1. Build: `make webui-install && make webui-build`
-2. Run: `./build/maxclaw gateway`
+2. Run: `./build/maxclaw-gateway -p 18890`
 3. Visit: `http://localhost:18890`
 
 If you see `Web UI not built`, run `make webui-build` first.

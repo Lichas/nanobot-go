@@ -96,6 +96,9 @@ should_kill_gateway_pid() {
     return 0
   fi
   case "$cmd" in
+    *"/maxclaw-gateway -p"*) return 0 ;;
+    *"/build/maxclaw-gateway -p"*) return 0 ;;
+    *"maxclaw-gateway -p"*) return 0 ;;
     *"/maxclaw gateway"*) return 0 ;;
     *"/build/maxclaw gateway"*) return 0 ;;
     *"maxclaw gateway -p"*) return 0 ;;
@@ -166,4 +169,4 @@ cleanup() {
 }
 trap cleanup EXIT INT TERM
 
-./build/maxclaw gateway -p "$GATEWAY_PORT"
+./build/maxclaw-gateway -p "$GATEWAY_PORT"

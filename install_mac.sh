@@ -13,6 +13,10 @@ usage() {
   cat <<USAGE
 maxclaw macOS installer
 
+Installs both:
+  - maxclaw (full CLI)
+  - maxclaw-gateway (standalone backend)
+
 Usage: ./install_mac.sh [options]
 
 Options:
@@ -111,6 +115,10 @@ fi
 echo "Installing bridge runtime dependencies"
 (cd "$INSTALL_DIR/bridge" && npm ci --omit=dev --no-audit --no-fund)
 
+echo "Installed binaries:"
+echo "  $INSTALL_DIR/maxclaw"
+echo "  $INSTALL_DIR/maxclaw-gateway"
+
 if [ "$SETUP_LAUNCHD" -eq 1 ]; then
   need_cmd launchctl
   LAUNCH_DIR="$HOME/Library/LaunchAgents"
@@ -169,6 +177,8 @@ PLIST
 else
   echo "Installed at $INSTALL_DIR"
   echo "Run manually:"
+  echo "  $INSTALL_DIR/maxclaw onboard"
+  echo "  $INSTALL_DIR/maxclaw-gateway -p $GATEWAY_PORT"
   echo "  $INSTALL_DIR/scripts/run_bridge.sh"
   echo "  $INSTALL_DIR/scripts/run_gateway.sh"
 fi

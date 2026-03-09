@@ -4,6 +4,10 @@
 
 ### Added
 
+- **开发重启命令与独立 Gateway 文档补齐**：新增 `make dev-gateway`、`make backend-restart`、`make dev-electron` 等开发入口，补充 `Makefile` 注释，并将 README / 安装脚本统一到 `maxclaw` CLI + `maxclaw-gateway` 独立后端的双二进制说明
+  - `Makefile`、`README.md`、`README.zh.md`、`install_mac.sh`、`install_linux.sh`、`scripts/run_gateway.sh`、`scripts/start_all.sh`、`scripts/start_daemon.sh`、`scripts/stop_daemon.sh`
+  - 验证：`make build`、`cd electron && npm run build`
+
 - **Openclaw竞品分析报告**：完成maxclaw与三个主要竞争对手（NanoClaw、IronClaw、SuperAGI）的全面对比分析，包含定位、核心能力、优劣势、成本、风险和推荐决策
   - 文件：`/Users/lua/.maxclaw/workspace/Openclaw_Competitive_Analysis_2026.md`
   - 文件：`/Users/lua/.maxclaw/workspace/Openclaw_Decision_Summary.md`

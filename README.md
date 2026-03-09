@@ -54,12 +54,25 @@ If you are familiar with OpenClaw, maxclaw follows similar local-first principle
 2. Build: `make build`
 3. Initialize workspace: `./build/maxclaw onboard`
 4. Configure: edit `~/.maxclaw/config.json`
-5. Run gateway: `./build/maxclaw gateway`
+5. Run gateway: `./build/maxclaw-gateway -p 18890`
+
+Built binaries:
+- `./build/maxclaw`: full CLI (`onboard`, `skills`, `telegram bind`, `gateway`, ...)
+- `./build/maxclaw-gateway`: standalone backend for desktop packaging or headless use
 
 All-in-one local dev startup:
 
 ```bash
 make build && make restart-daemon && make electron-start
+```
+
+Common dev restart commands:
+
+```bash
+make dev-gateway
+make backend-restart
+make dev-electron
+make electron-restart
 ```
 
 ## One-Command Install (Linux / macOS)
@@ -98,7 +111,7 @@ Set `agents.defaults.executionMode`:
 ## Web UI
 
 1. Build: `make webui-install && make webui-build`
-2. Start: `./build/maxclaw gateway`
+2. Start: `./build/maxclaw-gateway -p 18890`
 3. Open: `http://localhost:18890`
 
 ## More Docs
@@ -106,4 +119,4 @@ Set `agents.defaults.executionMode`:
 - Architecture: `ARCHITECTURE.md`
 - Operations: `MAINTENANCE.md`
 - Browser runbook: `BROWSER_OPS.md`
-- Full Chinese docs and all channel/config examples: [README.md](README.md)
+- Full Chinese docs and all channel/config examples: [README.zh.md](README.zh.md)

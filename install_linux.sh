@@ -14,6 +14,10 @@ usage() {
   cat <<USAGE
 maxclaw Linux installer
 
+Installs both:
+  - maxclaw (full CLI)
+  - maxclaw-gateway (standalone backend)
+
 Usage: ./install_linux.sh [options]
 
 Options:
@@ -131,6 +135,10 @@ else
   (cd "$INSTALL_DIR/bridge" && npm ci --omit=dev --no-audit --no-fund)
 fi
 
+echo "Installed binaries:"
+echo "  $INSTALL_DIR/maxclaw"
+echo "  $INSTALL_DIR/maxclaw-gateway"
+
 if [ "$SETUP_SERVICE" -eq 1 ]; then
   need_cmd systemctl
 
@@ -171,6 +179,8 @@ ENV"
 else
   echo "Installed at $INSTALL_DIR"
   echo "Run manually:"
+  echo "  $INSTALL_DIR/maxclaw onboard"
+  echo "  $INSTALL_DIR/maxclaw-gateway -p $GATEWAY_PORT"
   echo "  $INSTALL_DIR/scripts/run_bridge.sh"
   echo "  $INSTALL_DIR/scripts/run_gateway.sh"
 fi
