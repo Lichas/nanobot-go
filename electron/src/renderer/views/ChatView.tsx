@@ -2239,15 +2239,15 @@ export function ChatView() {
                         ))}
                       </div>
                     )}
-                    <div className="group relative rounded-[26px] border border-white/20 bg-[linear-gradient(180deg,rgba(94,108,126,0.9),rgba(74,88,107,0.94))] px-5 py-4 text-sm leading-7 text-white/94 shadow-[0_18px_38px_rgba(50,63,81,0.14)] dark:border-white/10 dark:bg-[linear-gradient(180deg,rgba(86,102,123,0.86),rgba(64,78,97,0.9))]">
-                      <pre className="whitespace-pre-wrap break-all font-sans selection:bg-primary-foreground/30">{message.content}</pre>
+                    <div className="group relative rounded-[26px] border border-[#d7c3ae] bg-[linear-gradient(180deg,rgba(231,220,205,0.98),rgba(217,203,185,0.98))] px-5 py-4 text-sm leading-7 text-[#3f352d] shadow-[0_16px_34px_rgba(184,103,63,0.12)] dark:border-[#7e624f] dark:bg-[linear-gradient(180deg,rgba(107,82,66,0.94),rgba(89,67,54,0.96))] dark:text-[#f6eee5]">
+                      <pre className="whitespace-pre-wrap break-all font-sans selection:bg-primary/20">{message.content}</pre>
                       <button
                         type="button"
                         onClick={() => {
                           void navigator.clipboard.writeText(message.content);
                           showToast('已复制到剪贴板');
                         }}
-                        className="absolute -right-2 -top-2 flex h-8 w-8 items-center justify-center rounded-full bg-white/92 text-foreground shadow-md opacity-0 transition-opacity group-hover:opacity-100 hover:bg-white"
+                        className="absolute -right-2 -top-2 flex h-8 w-8 items-center justify-center rounded-full border border-white/70 bg-white/92 text-foreground shadow-md opacity-0 transition-opacity group-hover:opacity-100 hover:bg-white"
                         title="复制内容"
                       >
                         <CopyIcon className="h-3.5 w-3.5" />
