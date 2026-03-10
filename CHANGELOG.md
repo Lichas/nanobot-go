@@ -40,6 +40,10 @@
 
 ### Fixed
 
+- **侧边栏高对比深色块降噪**：将左栏顶部品牌卡、当前选中会话卡和激活导航项从大面积蓝黑反相改为低饱和暖灰渐层与浅阴影，保留选中层级但不再压过主内容区
+  - `electron/src/renderer/components/Sidebar.tsx`
+  - 验证：`cd electron && npm run build`、`make build`、`make electron-restart`、桌面端截图目视确认左栏视觉权重下降
+
 - **桌面端 Gateway 徽标字段映射修正**：Renderer 的 Gateway 状态仓库改为兼容主进程 IPC 返回的 `state` 字段并归一化为 UI 使用的 `status`，修复 Gateway 已健康但侧栏与聊天头部仍长期显示“离线”的问题；同时收紧 preload 事件解绑，避免状态监听被误清空
   - `electron/src/renderer/store/index.ts`、`electron/src/preload/index.ts`
   - 验证：`cd electron && npm run build`、`make build`、`make electron-restart`、桌面端实测 `Gateway 在线`

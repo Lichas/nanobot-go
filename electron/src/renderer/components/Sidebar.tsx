@@ -349,10 +349,10 @@ export function Sidebar() {
 
   const statusTone =
     status === 'running'
-      ? 'text-emerald-700 bg-emerald-500/10 border-emerald-500/20'
+      ? 'border-emerald-500/22 bg-emerald-500/12 text-emerald-800'
       : status === 'starting'
-        ? 'text-amber-700 bg-amber-500/10 border-amber-500/20'
-        : 'text-rose-700 bg-rose-500/10 border-rose-500/20';
+        ? 'border-amber-500/22 bg-amber-500/10 text-amber-800'
+        : 'border-rose-500/18 bg-rose-500/10 text-rose-700';
   const statusLabel =
     language === 'zh'
       ? status === 'running'
@@ -375,10 +375,10 @@ export function Sidebar() {
       className={`relative z-10 m-2 mr-0 flex h-[calc(100%-1rem)] w-[308px] shrink-0 flex-col overflow-hidden rounded-[30px] border border-white/70 bg-[linear-gradient(180deg,rgba(255,252,248,0.94),rgba(248,244,238,0.9))] shadow-[0_24px_56px_rgba(28,36,50,0.1),inset_0_1px_0_rgba(255,255,255,0.92)] [backface-visibility:hidden] [contain:paint] [transform:translateZ(0)] dark:bg-[linear-gradient(180deg,rgba(24,31,45,0.92),rgba(20,27,39,0.9))] ${isMac ? 'pt-10' : 'pt-3'}`}
     >
       <div className="px-4 pb-3">
-        <div className="rounded-[26px] border border-white/70 bg-[#192233] px-4 py-4 text-white shadow-[0_20px_44px_rgba(25,34,51,0.24)]">
+        <div className="rounded-[26px] border border-white/80 bg-[linear-gradient(150deg,rgba(255,250,245,0.97),rgba(244,236,226,0.95)_58%,rgba(230,238,229,0.9))] px-4 py-4 text-foreground shadow-[0_18px_40px_rgba(104,88,75,0.14),inset_0_1px_0_rgba(255,255,255,0.86)] dark:border-white/10 dark:bg-[linear-gradient(150deg,rgba(34,42,56,0.94),rgba(27,35,48,0.94)_58%,rgba(24,47,44,0.9))] dark:text-white">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-white/58">Desktop Agent</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-foreground/46 dark:text-white/58">Desktop Agent</p>
               <h2 className="mt-2 text-[22px] font-semibold tracking-[-0.04em]">MaxClaw</h2>
             </div>
             <div className={`inline-flex items-center gap-2 rounded-full border px-2.5 py-1 text-[11px] font-medium ${statusTone}`}>
@@ -388,7 +388,7 @@ export function Sidebar() {
           </div>
           <button
             onClick={handleNewTask}
-            className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-[#192233] shadow-[0_14px_36px_rgba(10,18,31,0.28)] transition-transform duration-150 hover:-translate-y-0.5"
+            className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl border border-white/80 bg-white/88 px-4 py-3 text-sm font-semibold text-[#253142] shadow-[0_14px_30px_rgba(120,101,83,0.12)] transition-all duration-150 hover:-translate-y-0.5 hover:border-[#d9c6b5] hover:bg-white dark:border-white/10 dark:bg-white/8 dark:text-white dark:hover:bg-white/12"
           >
             <EditIcon className="h-5 w-5 flex-shrink-0" />
             <span>{t('sidebar.newTask')}</span>
@@ -426,7 +426,7 @@ export function Sidebar() {
                 onClick={() => dispatch(setActiveTab(item.id))}
                 className={`group mb-1 flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left transition-all duration-200 ${
                   isActive
-                    ? 'bg-[#192233] font-medium text-white shadow-[0_16px_34px_rgba(25,34,51,0.2)]'
+                    ? 'border border-[#dbcbbc] bg-[linear-gradient(135deg,rgba(248,241,233,0.98),rgba(238,228,216,0.94))] font-medium text-foreground shadow-[0_14px_28px_rgba(124,103,84,0.12)] dark:border-white/10 dark:bg-white/10 dark:text-white'
                     : 'text-secondary-foreground hover:bg-white/72 hover:text-foreground dark:hover:bg-white/10'
                 }`}
               >
@@ -516,7 +516,7 @@ export function Sidebar() {
                   key={session.key}
                   className={`group relative flex cursor-pointer items-center gap-1 rounded-[22px] border px-3 py-3 transition-colors duration-150 ${
                     isCurrent
-                      ? 'border-[#192233]/10 bg-[#192233] text-white shadow-[0_18px_40px_rgba(25,34,51,0.16)]'
+                      ? 'border-[#d9c7b8] bg-[linear-gradient(135deg,rgba(247,240,231,0.98),rgba(237,227,214,0.94))] text-foreground shadow-[0_18px_34px_rgba(128,106,88,0.12)] dark:border-white/10 dark:bg-white/10 dark:text-white'
                       : isMenuOpen
                         ? 'border-white/70 bg-white/78 dark:bg-white/10'
                         : 'border-transparent hover:border-white/70 hover:bg-white/60 dark:hover:bg-white/8'
@@ -529,15 +529,15 @@ export function Sidebar() {
                     }}
                     className="min-w-0 flex-1 text-left"
                   >
-                    <p className={`truncate text-[14px] font-medium leading-5 ${isCurrent ? 'text-white' : 'text-foreground'}`}>
+                    <p className={`truncate text-[14px] font-medium leading-5 ${isCurrent ? 'text-foreground dark:text-white' : 'text-foreground'}`}>
                       {getSessionDisplayTitle(session)}
                     </p>
                     {preview && (
-                      <p className={`truncate text-[11px] leading-4 ${isCurrent ? 'text-white/65' : 'text-foreground/50'}`}>
+                      <p className={`truncate text-[11px] leading-4 ${isCurrent ? 'text-foreground/62 dark:text-white/65' : 'text-foreground/50'}`}>
                         {preview}
                       </p>
                     )}
-                    <p className={`mt-1 text-[11px] leading-5 ${isCurrent ? 'text-white/55' : 'text-foreground/45'}`}>
+                    <p className={`mt-1 text-[11px] leading-5 ${isCurrent ? 'text-foreground/50 dark:text-white/55' : 'text-foreground/45'}`}>
                       {getChannelLabel(extractSessionChannel(session.key), language)} · {formatRelativeTime(session.lastMessageAt)}
                     </p>
                   </button>
@@ -552,10 +552,10 @@ export function Sidebar() {
                         isMenuOpen ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
                       }`}
                       style={{
-                        background: isMenuOpen ? 'var(--hover)' : 'transparent'
+                        background: isMenuOpen ? 'rgba(184, 103, 63, 0.08)' : 'transparent'
                       }}
                     >
-                      <DotsIcon className="h-4 w-4" style={{ color: isCurrent ? 'rgba(255,255,255,0.72)' : 'var(--muted)' }} />
+                      <DotsIcon className="h-4 w-4" style={{ color: isCurrent ? 'rgba(28,36,50,0.58)' : 'var(--muted)' }} />
                     </button>
 
                     {isMenuOpen && (
