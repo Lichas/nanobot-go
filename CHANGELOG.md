@@ -40,6 +40,10 @@
 
 ### Fixed
 
+- **聊天窗口消息层级与技能下拉层修正**：弱化用户消息气泡的近黑色对比，改为更柔和的暖灰蓝渐层；同时把聊天页技能下拉与头部技能浮层改成不透底的实体面板，避免露出下层输入区文字
+  - `electron/src/renderer/views/ChatView.tsx`
+  - 验证：`cd electron && npm run build`、`make build`
+
 - **首屏 Hero 收口并去掉重复信息**：将启动页顶部大幅品牌 Hero 压缩为单行引导条，隐藏首屏 composer 里重复的 workspace/model 标签，并缩短输入区默认高度，避免标题区过高且和 `Mission Brief` 说明重复
   - `electron/src/renderer/views/ChatView.tsx`
   - 验证：`cd electron && npm run build`、`make build`、`make electron-restart`、桌面端截图确认首屏可视高度下降

@@ -1744,7 +1744,7 @@ export function ChatView() {
   const renderComposer = (landing: boolean) => (
     <form
       onSubmit={handleSubmit}
-      className={`relative overflow-visible rounded-[30px] border border-white/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.92),rgba(252,248,242,0.82))] shadow-[0_24px_64px_rgba(28,36,50,0.12)] backdrop-blur-xl dark:bg-[linear-gradient(180deg,rgba(24,31,45,0.94),rgba(20,27,39,0.9))] ${
+      className={`relative isolate overflow-visible rounded-[30px] border border-white/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.92),rgba(252,248,242,0.82))] shadow-[0_24px_64px_rgba(28,36,50,0.12)] backdrop-blur-xl dark:bg-[linear-gradient(180deg,rgba(24,31,45,0.94),rgba(20,27,39,0.9))] ${
         landing ? 'p-6' : 'p-5'
       }`}
     >
@@ -1913,12 +1913,13 @@ export function ChatView() {
             )}
 
             {skillsPickerOpen && (
-              <div className="absolute bottom-10 left-0 z-30 w-80 rounded-[22px] border border-white/75 bg-white/96 p-3 shadow-[0_22px_54px_rgba(28,36,50,0.16)] dark:bg-[#151d2b]">
+              <div className="absolute bottom-10 left-0 z-30 isolate w-[22rem] overflow-hidden rounded-[24px] border border-[#e5dbcd] bg-[#f7f0e6] p-3 shadow-[0_28px_64px_rgba(28,36,50,0.18)] ring-1 ring-white/75 dark:border-white/10 dark:bg-[#182131] dark:ring-white/5">
+                <div className="pointer-events-none absolute inset-x-0 top-0 h-16 bg-[linear-gradient(180deg,rgba(255,255,255,0.8),rgba(255,255,255,0))] dark:bg-[linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0))]" />
                 <input
                   value={skillsQuery}
                   onChange={(event) => setSkillsQuery(event.target.value)}
                   placeholder="搜索技能"
-                  className="mb-2 w-full rounded-md border border-border bg-background px-2 py-1.5 text-xs text-foreground placeholder:text-foreground/40 focus:border-primary/40 focus:outline-none"
+                  className="relative mb-3 w-full rounded-2xl border border-[#ddd0c0] bg-white px-3 py-2 text-xs text-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.75)] placeholder:text-foreground/36 focus:border-primary/45 focus:outline-none dark:border-white/10 dark:bg-white/8"
                 />
                 <div className="max-h-56 space-y-1 overflow-y-auto pr-1">
                   {filteredSkills.map((skill) => {
@@ -1926,7 +1927,11 @@ export function ChatView() {
                     return (
                       <label
                         key={skill.name}
-                        className="flex cursor-pointer items-start gap-2 rounded-md px-2 py-1.5 text-xs hover:bg-secondary/70"
+                        className={`flex cursor-pointer items-start gap-2 rounded-2xl border px-3 py-2 text-xs transition-colors ${
+                          checked
+                            ? 'border-primary/22 bg-white text-foreground shadow-[0_10px_24px_rgba(184,103,63,0.08)] dark:bg-white/10'
+                            : 'border-transparent bg-transparent hover:border-white/70 hover:bg-white/72 dark:hover:border-white/10 dark:hover:bg-white/6'
+                        }`}
                       >
                         <input
                           type="checkbox"
@@ -1944,13 +1949,15 @@ export function ChatView() {
                     );
                   })}
                   {filteredSkills.length === 0 && (
-                    <div className="px-2 py-1 text-xs text-foreground/45">没有匹配的技能</div>
+                    <div className="rounded-2xl border border-dashed border-[#d9cebf] bg-white/72 px-3 py-3 text-xs text-foreground/45 dark:border-white/10 dark:bg-white/5">
+                      没有匹配的技能
+                    </div>
                   )}
                 </div>
                 {skillsLoadError && (
                   <p className="mt-2 text-xs text-red-500">技能加载失败: {skillsLoadError}</p>
                 )}
-                <p className="mt-2 text-[11px] text-foreground/45">
+                <p className="mt-3 border-t border-[#e1d5c6] pt-3 text-[11px] text-foreground/45 dark:border-white/10">
                   已选择 {selectedSkills.length} 个技能。未选择时按系统默认策略加载。
                 </p>
               </div>
@@ -2042,7 +2049,8 @@ export function ChatView() {
                   <ChevronDownIcon className={`h-3.5 w-3.5 transition-transform ${headerSkillsOpen ? 'rotate-180' : ''}`} />
                 </button>
                 {headerSkillsOpen && (
-                  <div className="absolute left-0 top-[calc(100%+0.45rem)] z-40 w-72 overflow-hidden rounded-[20px] border border-white/75 bg-white/96 p-2 shadow-[0_22px_54px_rgba(28,36,50,0.14)] dark:bg-[#151d2b]">
+                  <div className="absolute left-0 top-[calc(100%+0.45rem)] z-40 isolate w-72 overflow-hidden rounded-[22px] border border-[#e5dbcd] bg-[#f7f0e6] p-2 shadow-[0_22px_54px_rgba(28,36,50,0.14)] ring-1 ring-white/75 dark:border-white/10 dark:bg-[#182131] dark:ring-white/5">
+                    <div className="pointer-events-none absolute inset-x-0 top-0 h-14 bg-[linear-gradient(180deg,rgba(255,255,255,0.76),rgba(255,255,255,0))] dark:bg-[linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0))]" />
                     <div className="px-2 pb-2 pt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground/45">
                       {language === 'zh' ? '本次任务技能' : 'Task skills'}
                     </div>
@@ -2050,7 +2058,7 @@ export function ChatView() {
                       {selectedSkillSummaries.map((skill) => (
                         <div
                           key={skill.name}
-                          className="rounded-2xl border border-white/70 bg-white/72 px-3 py-2 dark:border-white/10 dark:bg-white/5"
+                          className="rounded-2xl border border-white/70 bg-white/80 px-3 py-2 dark:border-white/10 dark:bg-white/6"
                         >
                           <div className="text-sm font-medium text-foreground">{skill.displayName}</div>
                           {skill.description && (
@@ -2231,7 +2239,7 @@ export function ChatView() {
                         ))}
                       </div>
                     )}
-                    <div className="group relative rounded-[26px] bg-[#192233] px-5 py-4 text-sm leading-7 text-white shadow-[0_22px_48px_rgba(25,34,51,0.2)]">
+                    <div className="group relative rounded-[26px] border border-white/20 bg-[linear-gradient(180deg,rgba(94,108,126,0.9),rgba(74,88,107,0.94))] px-5 py-4 text-sm leading-7 text-white/94 shadow-[0_18px_38px_rgba(50,63,81,0.14)] dark:border-white/10 dark:bg-[linear-gradient(180deg,rgba(86,102,123,0.86),rgba(64,78,97,0.9))]">
                       <pre className="whitespace-pre-wrap break-all font-sans selection:bg-primary-foreground/30">{message.content}</pre>
                       <button
                         type="button"
@@ -2239,7 +2247,7 @@ export function ChatView() {
                           void navigator.clipboard.writeText(message.content);
                           showToast('已复制到剪贴板');
                         }}
-                        className="absolute -right-2 -top-2 flex h-8 w-8 items-center justify-center rounded-full bg-white text-foreground shadow-md opacity-0 transition-opacity group-hover:opacity-100 hover:bg-secondary"
+                        className="absolute -right-2 -top-2 flex h-8 w-8 items-center justify-center rounded-full bg-white/92 text-foreground shadow-md opacity-0 transition-opacity group-hover:opacity-100 hover:bg-white"
                         title="复制内容"
                       >
                         <CopyIcon className="h-3.5 w-3.5" />
