@@ -15,12 +15,18 @@ NC='\033[0m' # No Color
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 BUILD_DIR="$PROJECT_DIR/build"
-TEST_HOME="$SCRIPT_DIR/.test_home"
+TEST_HOME=""
 
 # 清理函数
 cleanup() {
     echo "Cleaning up..."
-    rm -rf "$TEST_HOME"
+    if [ -n "$TEST_HOME" ] && [ -d "$TEST_HOME" ]; then
+        rm -rf "$TEST_HOME"
+        if [ -d "$TEST_HOME" ]; then
+            echo -e "${RED}✗ FAIL${NC}: failed to clean temporary directory $TEST_HOME"
+            exit 1
+        fi
+    fi
 }
 
 trap cleanup EXIT
@@ -49,6 +55,7 @@ pass "Build successful"
 NANOBOT="$BUILD_DIR/maxclaw"
 
 # 设置测试环境
+TEST_HOME="$(mktemp -d "${TMPDIR:-/tmp}/maxclaw-e2e.XXXXXX")"
 export HOME="$TEST_HOME"
 mkdir -p "$TEST_HOME"
 

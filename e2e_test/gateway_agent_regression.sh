@@ -14,7 +14,7 @@ NC='\033[0m'
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 BUILD_DIR="$PROJECT_DIR/build"
-TEST_HOME="$SCRIPT_DIR/.gateway_agent_home"
+TEST_HOME=""
 PROVIDER_LOG="$TEST_HOME/fake_provider.log"
 GATEWAY_LOG="$TEST_HOME/gateway.log"
 PROVIDER_PID=""
@@ -44,6 +44,10 @@ info() {
     echo -e "${BLUE}ℹ INFO${NC}: $1"
 }
 
+make_temp_home() {
+    mktemp -d "${TMPDIR:-/tmp}/maxclaw-gateway-agent-e2e.XXXXXX"
+}
+
 cleanup() {
     if [ -n "$GATEWAY_PID" ] && kill -0 "$GATEWAY_PID" 2>/dev/null; then
         kill "$GATEWAY_PID" 2>/dev/null || true
@@ -53,7 +57,13 @@ cleanup() {
         kill "$PROVIDER_PID" 2>/dev/null || true
         wait "$PROVIDER_PID" 2>/dev/null || true
     fi
-    rm -rf "$TEST_HOME"
+    if [ -n "$TEST_HOME" ] && [ -d "$TEST_HOME" ]; then
+        rm -rf "$TEST_HOME"
+        if [ -d "$TEST_HOME" ]; then
+            echo -e "${RED}✗ FAIL${NC}: failed to clean temporary directory $TEST_HOME" >&2
+            exit 1
+        fi
+    fi
 }
 
 trap cleanup EXIT
@@ -117,6 +127,10 @@ print(value)
 }
 
 echo "=== Gateway Agent Regression E2E ==="
+
+TEST_HOME="$(make_temp_home)"
+PROVIDER_LOG="$TEST_HOME/fake_provider.log"
+GATEWAY_LOG="$TEST_HOME/gateway.log"
 
 mkdir -p "$BUILD_DIR"
 mkdir -p "$TEST_HOME"

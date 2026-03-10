@@ -16,6 +16,10 @@
   - `e2e_test/fake_openai_server.py`、`e2e_test/gateway_agent_regression.sh`、`e2e_test/README.md`
   - 验证：`bash e2e_test/gateway_agent_regression.sh`、`bash e2e_test/run.sh`、`make build`
 
+- **E2E 临时目录清理加固**：`run.sh` 和 gateway/agent 回归脚本改用带随机后缀的临时 HOME，并在退出时显式校验目录已删除，降低并发执行互踩和残留工作目录的风险
+  - `e2e_test/run.sh`、`e2e_test/gateway_agent_regression.sh`、`e2e_test/README.md`
+  - 验证：`bash e2e_test/gateway_agent_regression.sh`、`bash e2e_test/run.sh`、`make build`
+
 ### Fixed
 
 - **Go 1.24 基线统一并补齐兼容性修复**：将 `go.mod`、Docker builder、桌面 CI 和开发文档统一到 Go 1.24，执行 `go mod tidy` 清理过期间接依赖，并修复 Go 1.24 下 `pkg/tools/mcp.go` 的错误聚合写法，避免 `go test ./...` 因可疑格式串失败

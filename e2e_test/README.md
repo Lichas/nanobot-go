@@ -53,6 +53,7 @@ fi
 - 测试使用临时 HOME 目录，不会影响真实配置
 - 需要提前安装 `go` 和 `python3`（用于 JSON 验证）
 - 不测试真实的 LLM API 调用（需要 API key）
+- E2E 会为每次运行创建独立的临时 HOME 目录，并在退出时清理，适合并发执行
 
 ## Gateway Agent Regression
 
