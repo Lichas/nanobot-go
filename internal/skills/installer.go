@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -460,22 +461,14 @@ func isNetworkError(err error) bool {
 
 // downloadFileWithContext 带上下文的文件下载
 func (i *Installer) downloadFileWithContext(ctx context.Context, url, filepath string) error {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
-	if err != nil {
-		return err
-	}
-
-	// 设置请求头，模拟浏览器
-	req.Header.Set("User-Agent", "maxclaw-skills-installer/1.0")
-
-	resp, err := i.httpClient.Do(req)
+	resp, err := i.getWithRetry(ctx, url)
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("bad status: %s", resp.Status)
+		return formatHTTPStatusError(resp)
 	}
 
 	// 创建目标文件
@@ -490,24 +483,127 @@ func (i *Installer) downloadFileWithContext(ctx context.Context, url, filepath s
 }
 
 func (i *Installer) downloadBytesWithContext(ctx context.Context, rawURL string) ([]byte, error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, rawURL, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Set("User-Agent", "maxclaw-skills-installer/1.0")
-
-	resp, err := i.httpClient.Do(req)
+	resp, err := i.getWithRetry(ctx, rawURL)
 	if err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("bad status: %s", resp.Status)
+		return nil, formatHTTPStatusError(resp)
 	}
 
 	return io.ReadAll(resp.Body)
+}
+
+func (i *Installer) getWithRetry(ctx context.Context, rawURL string) (*http.Response, error) {
+	var lastErr error
+
+	for attempt := 0; attempt < 4; attempt++ {
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, rawURL, nil)
+		if err != nil {
+			return nil, err
+		}
+
+		req.Header.Set("User-Agent", "maxclaw-skills-installer/1.0")
+
+		resp, err := i.httpClient.Do(req)
+		if err != nil {
+			lastErr = err
+			if attempt == 3 || !isNetworkError(err) {
+				return nil, err
+			}
+			if err := waitForRetry(ctx, retryDelay(nil, attempt)); err != nil {
+				return nil, err
+			}
+			continue
+		}
+
+		if !shouldRetryHTTPStatus(resp.StatusCode) {
+			return resp, nil
+		}
+
+		lastErr = formatHTTPStatusError(resp)
+		resp.Body.Close()
+		if attempt == 3 {
+			return nil, lastErr
+		}
+		if err := waitForRetry(ctx, retryDelay(resp.Header, attempt)); err != nil {
+			return nil, err
+		}
+	}
+
+	if lastErr != nil {
+		return nil, lastErr
+	}
+	return nil, fmt.Errorf("request failed: %s", rawURL)
+}
+
+func shouldRetryHTTPStatus(statusCode int) bool {
+	return statusCode == http.StatusTooManyRequests || statusCode >= http.StatusInternalServerError
+}
+
+func retryDelay(header http.Header, attempt int) time.Duration {
+	if header != nil {
+		if parsed, ok := parseRetryAfter(header.Get("Retry-After")); ok {
+			return parsed
+		}
+	}
+
+	delay := 500 * time.Millisecond
+	for i := 0; i < attempt; i++ {
+		delay *= 2
+	}
+	return delay
+}
+
+func parseRetryAfter(raw string) (time.Duration, bool) {
+	raw = strings.TrimSpace(raw)
+	if raw == "" {
+		return 0, false
+	}
+
+	if seconds, err := strconv.Atoi(raw); err == nil {
+		if seconds < 0 {
+			seconds = 0
+		}
+		return time.Duration(seconds) * time.Second, true
+	}
+
+	if ts, err := http.ParseTime(raw); err == nil {
+		delay := time.Until(ts)
+		if delay < 0 {
+			delay = 0
+		}
+		return delay, true
+	}
+
+	return 0, false
+}
+
+func waitForRetry(ctx context.Context, delay time.Duration) error {
+	if delay <= 0 {
+		return nil
+	}
+
+	timer := time.NewTimer(delay)
+	defer timer.Stop()
+
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case <-timer.C:
+		return nil
+	}
+}
+
+func formatHTTPStatusError(resp *http.Response) error {
+	body, _ := io.ReadAll(io.LimitReader(resp.Body, 512))
+	bodyText := strings.TrimSpace(string(body))
+	if bodyText == "" {
+		return fmt.Errorf("bad status: %s", resp.Status)
+	}
+	return fmt.Errorf("bad status: %s: %s", resp.Status, bodyText)
 }
 
 // extractSkills 解压 zip 文件中的 skills 到目标目录

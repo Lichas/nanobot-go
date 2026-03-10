@@ -81,6 +81,22 @@ const DEFAULT_RECOMMENDED_SOURCES: RecommendedSkillSource[] = [
   },
 ];
 
+async function getResponseError(
+  response: Response,
+  fallback: string,
+): Promise<string> {
+  try {
+    const data = (await response.json()) as { error?: string };
+    if (typeof data.error === 'string' && data.error.trim()) {
+      return data.error;
+    }
+  } catch {
+    // Fall back to the generic message when the body is not JSON.
+  }
+
+  return fallback;
+}
+
 export function SkillsView() {
   const { t } = useTranslation();
   const [skills, setSkills] = useState<Skill[]>([]);
@@ -139,7 +155,11 @@ export function SkillsView() {
           method: 'POST',
         },
       );
-      if (!response.ok) throw new Error('Failed to toggle skill');
+      if (!response.ok) {
+        throw new Error(
+          await getResponseError(response, 'Failed to toggle skill'),
+        );
+      }
       void fetchSkills();
     } catch (err) {
       setError(err instanceof Error ? err.message : t('common.error'));
@@ -160,7 +180,11 @@ export function SkillsView() {
           }),
         },
       );
-      if (!response.ok) throw new Error('Failed to install skill');
+      if (!response.ok) {
+        throw new Error(
+          await getResponseError(response, 'Failed to install skill'),
+        );
+      }
       setInstallModalOpen(false);
       setInstallUrl('');
       setSelectedRecommend('');

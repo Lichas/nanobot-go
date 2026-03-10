@@ -40,6 +40,10 @@
 
 ### Fixed
 
+- **ClawHub 技能安装补上限流重试与真实报错**：ClawHub 安装请求现在会对 `429/5xx` 响应按 `Retry-After` 自动重试，技能市场安装弹窗也会显示后端返回的具体错误，不再只看到通用的 “Failed to install skill”
+  - `internal/skills/installer.go`、`internal/skills/clawhub_test.go`、`electron/src/renderer/views/SkillsView.tsx`
+  - 验证：`go test ./internal/skills ./internal/cli ./internal/webui`、`cd electron && npm run build`、`make build`
+
 - **首屏 Hero 收口并去掉重复信息**：将启动页顶部大幅品牌 Hero 压缩为单行引导条，隐藏首屏 composer 里重复的 workspace/model 标签，并缩短输入区默认高度，避免标题区过高且和 `Mission Brief` 说明重复
   - `electron/src/renderer/views/ChatView.tsx`
   - 验证：`cd electron && npm run build`、`make build`、`make electron-restart`、桌面端截图确认首屏可视高度下降

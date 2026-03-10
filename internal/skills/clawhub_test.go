@@ -87,6 +87,58 @@ func TestInstallFromClawHub(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestInstallFromClawHubRetriesRateLimit(t *testing.T) {
+	workspace := t.TempDir()
+	zipBytes := buildTestSkillZip(t, map[string]string{
+		"SKILL.md": "# Self Improving Agent\n\nLearn from failures.",
+	})
+
+	metaRequests := 0
+	downloadRequests := 0
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case r.URL.Path == "/api/v1/skills/self-improving-agent":
+			metaRequests++
+			if metaRequests == 1 {
+				w.Header().Set("Retry-After", "0")
+				http.Error(w, "Rate limit exceeded", http.StatusTooManyRequests)
+				return
+			}
+			_, _ = io.WriteString(w, `{"skill":{"slug":"self-improving-agent","displayName":"Self Improving Agent","tags":{"latest":"3.0.0"}},"latestVersion":{"version":"3.0.0"}}`)
+		case r.URL.Path == "/api/v1/download":
+			downloadRequests++
+			if downloadRequests == 1 {
+				w.Header().Set("Retry-After", "0")
+				http.Error(w, "Rate limit exceeded", http.StatusTooManyRequests)
+				return
+			}
+			assert.Equal(t, "self-improving-agent", r.URL.Query().Get("slug"))
+			assert.Equal(t, "3.0.0", r.URL.Query().Get("version"))
+			w.Header().Set("Content-Type", "application/zip")
+			_, _ = w.Write(zipBytes)
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	defer server.Close()
+
+	installer := NewInstaller(workspace)
+	got, err := installer.InstallFromClawHub(ClawHubSource{
+		Registry: server.URL,
+		Slug:     "self-improving-agent",
+	})
+	require.NoError(t, err)
+
+	assert.Equal(t, 2, metaRequests)
+	assert.Equal(t, 2, downloadRequests)
+	assert.Equal(t, "3.0.0", got.Version)
+
+	content, err := os.ReadFile(filepath.Join(workspace, "skills", "self-improving-agent", "SKILL.md"))
+	require.NoError(t, err)
+	assert.Contains(t, string(content), "Self Improving Agent")
+}
+
 func buildTestSkillZip(t *testing.T, files map[string]string) []byte {
 	t.Helper()
 
