@@ -44,6 +44,10 @@
   - `electron/package.json`、`electron/src/main/gateway.ts`
   - 验证：`mv electron/dist electron/dist.prewait-backup && cd electron && npm run dev`、`cd electron && npm run build`、`make build`
 
+- **MiniMax 鉴权与连通性测试修复**：MiniMax OpenAI 兼容请求改为发送原始 `Authorization` 值而非 `Bearer`，设置页连接测试改走 `/chat/completions` 探活，并兼容将旧的 `api.minimaxi.com` 配置归一化为 `api.minimax.com`
+  - `internal/providers/openai.go`、`internal/webui/server.go`、`internal/config/schema.go`、`internal/providers/openai_test.go`、`internal/webui/server_test.go`、`internal/config/config_test.go`
+  - 验证：`go test ./internal/providers ./internal/webui ./internal/config`、`make build`
+
 - **桌面窗口外层底板移除**：移除 Electron renderer 里额外的外边距、内嵌底板和装饰发光层，让主界面直接贴合窗口边界，不再出现“APP 外还有一层底”的视觉
   - `electron/src/renderer/App.tsx`、`electron/src/renderer/styles/globals.css`
   - 验证：`cd electron && npm run build`、`make build`

@@ -84,7 +84,7 @@ func TestGetAPIKeyNoKeys(t *testing.T) {
 func TestGetAPIBase(t *testing.T) {
 	cfg := DefaultConfig()
 	cfg.Providers.VLLM.APIBase = "http://localhost:8000/v1"
-	cfg.Providers.MiniMax.APIBase = "https://api.minimaxi.com/v1"
+	cfg.Providers.MiniMax.APIBase = "https://api.minimax.com/v1"
 	cfg.Providers.Moonshot.APIBase = "https://api.moonshot.ai/v1"
 	cfg.Providers.DashScope.APIBase = "https://dashscope.custom/v1"
 	cfg.Providers.Zhipu.APIBase = "https://open.bigmodel.cn/api/coding/paas/v4"
@@ -97,9 +97,9 @@ func TestGetAPIBase(t *testing.T) {
 		{"vllm/llama-3", "http://localhost:8000/v1"},
 		{"meta-llama/Llama-3.1-8B-Instruct", "http://localhost:8000/v1"},
 		{"kimi-k2.5", "https://api.moonshot.ai/v1"},
-		{"minimax/MiniMax-M2", "https://api.minimaxi.com/v1"},
+		{"minimax/MiniMax-M2", "https://api.minimax.com/v1"},
 		{"qwen-max", "https://dashscope.custom/v1"},
-		{"minimax/another-model", "https://api.minimaxi.com/v1"},
+		{"minimax/another-model", "https://api.minimax.com/v1"},
 		{"glm-4.5", "https://open.bigmodel.cn/api/coding/paas/v4"},
 		{"zai/glm-5", "https://open.bigmodel.cn/api/coding/paas/v4"},
 		{"glm-4.6v", "https://open.bigmodel.cn/api/paas/v4"},
@@ -119,6 +119,14 @@ func TestGetAPIBaseMiniMaxDefault(t *testing.T) {
 	cfg := DefaultConfig()
 	got := cfg.GetAPIBase("minimax/MiniMax-M2")
 	assert.Equal(t, "https://api.minimax.io/v1", got)
+}
+
+func TestGetAPIBaseMiniMaxNormalizesLegacyChinaDomain(t *testing.T) {
+	cfg := DefaultConfig()
+	cfg.Providers.MiniMax.APIBase = "https://api.minimaxi.com/v1"
+
+	got := cfg.GetAPIBase("minimax/MiniMax-M2")
+	assert.Equal(t, "https://api.minimax.com/v1", got)
 }
 
 func TestGetAPIBaseDashScopeDefault(t *testing.T) {
