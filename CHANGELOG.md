@@ -40,6 +40,10 @@
 
 ### Fixed
 
+- **后台 Gateway 重启脚本参数对齐独立二进制入口**：修正 `start_daemon.sh`、`start_all.sh`、`stop_daemon.sh`、`run_gateway.sh` 对 `maxclaw-gateway` 的调用与进程匹配模式，避免 `make backend-restart` / `make electron-restart` 仍按旧参数启动导致 Gateway 起不来
+  - `scripts/start_daemon.sh`、`scripts/start_all.sh`、`scripts/stop_daemon.sh`、`scripts/run_gateway.sh`
+  - 验证：`make backend-restart`、`lsof -iTCP:18890 -sTCP:LISTEN`、`make electron-restart`、`curl http://127.0.0.1:18890/api/status`、`make build`
+
 - **MiniMax 国内域名归一化方向修正**：将错误的 `api.minimaxi.com -> api.minimax.com` 归一化改为反向兼容，把误填的 `api.minimax.com` 自动纠正为可访问的 `api.minimaxi.com`，避免连接测试和实际请求被改写到不存在的域名
   - `internal/config/schema.go`、`internal/webui/server.go`、`internal/config/config_test.go`、`internal/webui/server_test.go`
   - 验证：`curl -X POST https://api.minimaxi.com/v1/chat/completions ...`、`curl -X POST https://api.minimax.io/v1/chat/completions ...`、`go test ./internal/config ./internal/webui`、`make build`

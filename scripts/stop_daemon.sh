@@ -53,6 +53,9 @@ should_kill_gateway_pid() {
   local cmd
   cmd="$(ps -p "$pid" -o command= 2>/dev/null || true)"
   case "$cmd" in
+    *"/maxclaw-gateway maxclaw-gateway -p"*) return 0 ;;
+    *"/build/maxclaw-gateway maxclaw-gateway -p"*) return 0 ;;
+    *"maxclaw-gateway maxclaw-gateway -p"*) return 0 ;;
     *"/maxclaw-gateway -p"*) return 0 ;;
     *"/build/maxclaw-gateway -p"*) return 0 ;;
     *"maxclaw-gateway -p"*) return 0 ;;
@@ -118,4 +121,4 @@ stop_pid gateway
 kill_stale_by_port bridge "$BRIDGE_PORT"
 kill_stale_by_port gateway "$GATEWAY_PORT"
 kill_stale_by_pattern bridge "/bridge/dist/index.js" "maxclaw-whatsapp-bridge" "nanobot-whatsapp-bridge"
-kill_stale_by_pattern gateway "/build/maxclaw-gateway -p" "maxclaw-gateway -p" "/build/maxclaw gateway" "/build/nanobot-go gateway" "/build/nanobot gateway" "maxclaw gateway -p" "nanobot-go gateway -p" "nanobot gateway -p"
+kill_stale_by_pattern gateway "/build/maxclaw-gateway maxclaw-gateway -p" "maxclaw-gateway maxclaw-gateway -p" "/build/maxclaw-gateway -p" "maxclaw-gateway -p" "/build/maxclaw gateway" "/build/nanobot-go gateway" "/build/nanobot gateway" "maxclaw gateway -p" "nanobot-go gateway -p" "nanobot gateway -p"

@@ -25,7 +25,7 @@ fi
 
 case "$(basename "$BIN")" in
   maxclaw-gateway|maxclaw-gateway.exe)
-    exec "$BIN" -p "$GATEWAY_PORT"
+    exec "$BIN" maxclaw-gateway -p "$GATEWAY_PORT"
     ;;
   *)
     exec "$BIN" gateway -p "$GATEWAY_PORT"

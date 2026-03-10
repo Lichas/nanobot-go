@@ -143,6 +143,9 @@ should_kill_gateway_pid() {
     return 0
   fi
   case "$cmd" in
+    *"/maxclaw-gateway maxclaw-gateway -p"*) return 0 ;;
+    *"/build/maxclaw-gateway maxclaw-gateway -p"*) return 0 ;;
+    *"maxclaw-gateway maxclaw-gateway -p"*) return 0 ;;
     *"/maxclaw-gateway -p"*) return 0 ;;
     *"/build/maxclaw-gateway -p"*) return 0 ;;
     *"maxclaw-gateway -p"*) return 0 ;;
@@ -257,7 +260,7 @@ if [ -z "$gateway_pid" ] || ! is_pid_running "$gateway_pid"; then
     https_proxy="${https_proxy:-}" \
     http_proxy="${http_proxy:-}" \
     all_proxy="${all_proxy:-}" \
-    "$ROOT_DIR/build/maxclaw-gateway" -p "$GATEWAY_PORT" > "$LOG_DIR/gateway.log" 2>&1 &
+    "$ROOT_DIR/build/maxclaw-gateway" maxclaw-gateway -p "$GATEWAY_PORT" > "$LOG_DIR/gateway.log" 2>&1 &
   echo $! > "$PID_DIR/gateway.pid"
   echo "Gateway PID: $(cat "$PID_DIR/gateway.pid")"
   wait_service_ready "gateway" "$(cat "$PID_DIR/gateway.pid")" "$GATEWAY_PORT" "$LOG_DIR/gateway.log"
