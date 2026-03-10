@@ -30,8 +30,9 @@ const electronAPI = {
     getStatus: () => ipcRenderer.invoke('gateway:getStatus'),
     restart: () => ipcRenderer.invoke('gateway:restart'),
     onStatusChange: (callback: (status: GatewayStatus) => void) => {
-      ipcRenderer.on('gateway:status-change', (_, status) => callback(status));
-      return () => ipcRenderer.removeAllListeners('gateway:status-change');
+      const listener = (_: unknown, status: GatewayStatus) => callback(status);
+      ipcRenderer.on('gateway:status-change', listener);
+      return () => ipcRenderer.removeListener('gateway:status-change', listener);
     }
   },
 
@@ -40,8 +41,9 @@ const electronAPI = {
     get: () => ipcRenderer.invoke('config:get'),
     set: (config: Partial<AppConfig>) => ipcRenderer.invoke('config:set', config),
     onChange: (callback: (config: AppConfig) => void) => {
-      ipcRenderer.on('config:change', (_, config) => callback(config));
-      return () => ipcRenderer.removeAllListeners('config:change');
+      const listener = (_: unknown, config: AppConfig) => callback(config);
+      ipcRenderer.on('config:change', listener);
+      return () => ipcRenderer.removeListener('config:change', listener);
     }
   },
 
@@ -71,15 +73,15 @@ const electronAPI = {
   tray: {
     onNewChat: (callback: () => void) => {
       ipcRenderer.on('tray:new-chat', callback);
-      return () => ipcRenderer.removeAllListeners('tray:new-chat');
+      return () => ipcRenderer.removeListener('tray:new-chat', callback);
     },
     onOpenSettings: (callback: () => void) => {
       ipcRenderer.on('tray:open-settings', callback);
-      return () => ipcRenderer.removeAllListeners('tray:open-settings');
+      return () => ipcRenderer.removeListener('tray:open-settings', callback);
     },
     onRestartGateway: (callback: () => void) => {
       ipcRenderer.on('tray:restart-gateway', callback);
-      return () => ipcRenderer.removeAllListeners('tray:restart-gateway');
+      return () => ipcRenderer.removeListener('tray:restart-gateway', callback);
     }
   },
 
@@ -89,7 +91,7 @@ const electronAPI = {
     get: () => ipcRenderer.invoke('shortcuts:get'),
     onNewChat: (callback: () => void) => {
       ipcRenderer.on('shortcut:newChat', callback);
-      return () => ipcRenderer.removeAllListeners('shortcut:newChat');
+      return () => ipcRenderer.removeListener('shortcut:newChat', callback);
     }
   },
 

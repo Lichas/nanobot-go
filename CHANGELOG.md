@@ -40,6 +40,10 @@
 
 ### Fixed
 
+- **桌面端 Gateway 徽标字段映射修正**：Renderer 的 Gateway 状态仓库改为兼容主进程 IPC 返回的 `state` 字段并归一化为 UI 使用的 `status`，修复 Gateway 已健康但侧栏与聊天头部仍长期显示“离线”的问题；同时收紧 preload 事件解绑，避免状态监听被误清空
+  - `electron/src/renderer/store/index.ts`、`electron/src/preload/index.ts`
+  - 验证：`cd electron && npm run build`、`make build`、`make electron-restart`、桌面端实测 `Gateway 在线`
+
 - **MiniMax 鉴权与官方 OpenAI SDK 对齐**：将 MiniMax 兼容接口请求头修正回 `Authorization: Bearer <key>`，并同步修正设置页连接测试，和 OpenAI Python SDK 的实际请求行为保持一致；本地 Gateway 链路不再因为错误去掉 `Bearer` 而触发 401
   - `internal/providers/openai.go`、`internal/providers/openai_test.go`、`internal/webui/server.go`、`internal/webui/server_test.go`
   - 验证：`python OpenAI(base_url='https://api.minimaxi.com/v1').chat.completions.create(...)`、`curl -X POST http://127.0.0.1:18890/api/message?stream=1 ...`、`go test ./internal/providers ./internal/webui`、`make build`

@@ -16,10 +16,28 @@ const getInitialLanguage = (): 'zh' | 'en' => {
   return detectSystemLanguage();
 };
 
+type GatewayRuntimeStatus = 'running' | 'stopped' | 'error' | 'starting';
+
 interface GatewayState {
-  status: 'running' | 'stopped' | 'error' | 'starting';
+  status: GatewayRuntimeStatus;
   port: number;
   error?: string;
+}
+
+type GatewayStatusPayload =
+  | GatewayState
+  | {
+      state: GatewayRuntimeStatus;
+      port: number;
+      error?: string;
+    };
+
+function normalizeGatewayStatus(payload: GatewayStatusPayload): GatewayState {
+  return {
+    status: 'status' in payload ? payload.status : payload.state,
+    port: payload.port,
+    error: payload.error
+  };
 }
 
 interface UIState {
@@ -38,8 +56,8 @@ const gatewaySlice = createSlice({
     port: 18890
   } as GatewayState,
   reducers: {
-    setStatus: (state, action: PayloadAction<GatewayState>) => {
-      return action.payload;
+    setStatus: (_, action: PayloadAction<GatewayStatusPayload>) => {
+      return normalizeGatewayStatus(action.payload);
     }
   }
 });
