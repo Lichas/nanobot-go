@@ -126,8 +126,8 @@ func TestExtractImageAttachmentIgnoresNonImageFiles(t *testing.T) {
 }
 
 func TestNormalizeMiniMaxBaseURLRewritesLegacyChinaDomain(t *testing.T) {
-	got := normalizeMiniMaxBaseURL("https://api.minimaxi.com/v1")
-	assert.Equal(t, "https://api.minimax.com/v1", got)
+	got := normalizeMiniMaxBaseURL("https://api.minimax.com/v1")
+	assert.Equal(t, "https://api.minimaxi.com/v1", got)
 }
 
 func TestHandleTestProviderMiniMaxUsesRawAuthorizationAndChatCompletions(t *testing.T) {

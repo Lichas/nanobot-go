@@ -40,6 +40,10 @@
 
 ### Fixed
 
+- **MiniMax 国内域名归一化方向修正**：将错误的 `api.minimaxi.com -> api.minimax.com` 归一化改为反向兼容，把误填的 `api.minimax.com` 自动纠正为可访问的 `api.minimaxi.com`，避免连接测试和实际请求被改写到不存在的域名
+  - `internal/config/schema.go`、`internal/webui/server.go`、`internal/config/config_test.go`、`internal/webui/server_test.go`
+  - 验证：`curl -X POST https://api.minimaxi.com/v1/chat/completions ...`、`curl -X POST https://api.minimax.io/v1/chat/completions ...`、`go test ./internal/config ./internal/webui`、`make build`
+
 - **Electron 开发白屏与内置 Gateway 启动异常修复**：桌面开发启动改为等待 `dist/main` 与 `dist/renderer/index.html` 产物就绪后再拉起 Electron，避免 `loadFile` 抢跑导致白屏；同时按二进制类型正确选择 Gateway 启动参数，修复桌面端误用命令导致内置 Gateway 起不来的问题
   - `electron/package.json`、`electron/src/main/gateway.ts`
   - 验证：`mv electron/dist electron/dist.prewait-backup && cd electron && npm run dev`、`cd electron && npm run build`、`make build`

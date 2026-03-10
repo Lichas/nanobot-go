@@ -452,8 +452,8 @@ func normalizeProviderAPIBase(providerName, model, apiBase string) string {
 			}
 		}
 	case "minimax":
-		if strings.Contains(normalizedBase, "api.minimaxi.com") {
-			return strings.Replace(apiBase, "api.minimaxi.com", "api.minimax.com", 1)
+		if strings.Contains(normalizedBase, "api.minimax.com") {
+			return strings.Replace(apiBase, "api.minimax.com", "api.minimaxi.com", 1)
 		}
 	}
 

@@ -1934,7 +1934,7 @@ func normalizeMiniMaxBaseURL(raw string) string {
 	if trimmed == "" {
 		return raw
 	}
-	return strings.Replace(trimmed, "api.minimaxi.com", "api.minimax.com", 1)
+	return strings.Replace(trimmed, "api.minimax.com", "api.minimaxi.com", 1)
 }
 
 // handleTestChannel tests IM channel connections (telegram, discord, etc.)
