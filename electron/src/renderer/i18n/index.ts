@@ -284,6 +284,13 @@ const zh: Translations = {
   'mcp.form.command': '命令',
   'mcp.form.args': '参数',
   'mcp.form.argsHint': '用空格分隔多个参数',
+  'mcp.form.modeForm': '表单填写',
+  'mcp.form.modeJson': 'JSON 导入',
+  'mcp.form.json': 'JSON 配置',
+  'mcp.form.jsonHint':
+    '支持粘贴单个 server 对象、命名 server 块，或包含 mcpServers 的 Claude/Cursor 配置。mcpServers 可一次导入多个服务器。',
+  'mcp.form.jsonPlaceholder':
+    '{\n  "mcpServers": {\n    "playwright": {\n      "command": "npx",\n      "args": ["-y", "@playwright/mcp@latest"]\n    }\n  }\n}',
   'mcp.form.env': '环境变量',
   'mcp.form.envHint': '每行一个，格式：KEY=value',
   'mcp.form.url': 'SSE 地址',
@@ -595,6 +602,13 @@ const en: Translations = {
   'mcp.form.command': 'Command',
   'mcp.form.args': 'Arguments',
   'mcp.form.argsHint': 'Separate multiple arguments with spaces',
+  'mcp.form.modeForm': 'Form',
+  'mcp.form.modeJson': 'JSON Import',
+  'mcp.form.json': 'JSON Config',
+  'mcp.form.jsonHint':
+    'Accepts a single server object, a named server map, or a Claude/Cursor config with mcpServers. mcpServers can import multiple servers at once.',
+  'mcp.form.jsonPlaceholder':
+    '{\n  "mcpServers": {\n    "playwright": {\n      "command": "npx",\n      "args": ["-y", "@playwright/mcp@latest"]\n    }\n  }\n}',
   'mcp.form.env': 'Environment Variables',
   'mcp.form.envHint': 'One per line, format: KEY=value',
   'mcp.form.url': 'SSE URL',

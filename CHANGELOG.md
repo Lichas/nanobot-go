@@ -4,6 +4,10 @@
 
 ### Added
 
+- **MCP 管理页支持 JSON 导入服务器配置**：桌面端 MCP 管理弹窗新增“JSON 导入”模式，兼容单个 server 对象、命名 server 块和 Claude/Cursor 风格的 `mcpServers` JSON，并支持一次批量导入多个服务器，避免手动把 `command` / `args` JSON 误填进表单字段
+  - `electron/src/renderer/views/MCPView.tsx`、`electron/src/renderer/i18n/index.ts`
+  - 验证：`cd electron && npm ci && npm run build`、`GOFLAGS='-modcacherw' ./e2e_test/run.sh`、`NO_PROXY=127.0.0.1,localhost,::1 no_proxy=127.0.0.1,localhost,::1 PORT=18901 ./e2e_test/auto_spawn_ui_regression.sh --setup-only`、`make build`
+
 - **OpenAI / Anthropic 原生官方 SDK Provider 接入**：新增 OpenAI 与 Anthropic 官方 SDK provider 和统一 provider 工厂，让 gateway、agent、cron、Web UI 热更新按 `apiFormat`/模型选择原生实现，其它厂商继续走原有 OpenAI 兼容层；同时修正 provider 连接测试与运行时协议一致，并更新配置文档
   - `internal/providers/factory.go`、`internal/providers/openai_official.go`、`internal/providers/anthropic.go`、`internal/providers/*_test.go`、`internal/cli/gateway.go`、`internal/cli/agent.go`、`internal/cli/cron.go`、`internal/webui/server.go`、`internal/config/schema.go`、`internal/config/config_test.go`、`internal/providers/README.md`、`README.md`、`README.zh.md`
   - 验证：`go test ./internal/providers ./internal/cli ./internal/webui ./internal/config`、`make build`
