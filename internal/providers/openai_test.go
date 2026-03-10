@@ -231,14 +231,14 @@ func TestOpenAIProviderSupportsImageInputUsesResolver(t *testing.T) {
 	}
 }
 
-func TestAuthorizationHeaderValueUsesRawKeyForMiniMax(t *testing.T) {
-	got := authorizationHeaderValue("sk-minimax", "https://api.minimax.com/v1", "minimax")
-	if got != "sk-minimax" {
-		t.Fatalf("expected raw api key for minimax, got %q", got)
+func TestAuthorizationHeaderValueUsesBearerForMiniMax(t *testing.T) {
+	got := authorizationHeaderValue("sk-minimax", "https://api.minimaxi.com/v1", "minimax")
+	if got != "Bearer sk-minimax" {
+		t.Fatalf("expected bearer auth for minimax, got %q", got)
 	}
 }
 
-func TestOpenAIProviderMiniMaxRequestUsesRawAuthorization(t *testing.T) {
+func TestOpenAIProviderMiniMaxRequestUsesBearerAuthorization(t *testing.T) {
 	var authHeader string
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		authHeader = r.Header.Get("Authorization")
@@ -256,7 +256,7 @@ func TestOpenAIProviderMiniMaxRequestUsesRawAuthorization(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Chat failed: %v", err)
 	}
-	if authHeader != "sk-minimax" {
-		t.Fatalf("expected raw api key auth header, got %q", authHeader)
+	if authHeader != "Bearer sk-minimax" {
+		t.Fatalf("expected bearer auth header, got %q", authHeader)
 	}
 }

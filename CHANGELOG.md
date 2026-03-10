@@ -40,6 +40,10 @@
 
 ### Fixed
 
+- **MiniMax 鉴权与官方 OpenAI SDK 对齐**：将 MiniMax 兼容接口请求头修正回 `Authorization: Bearer <key>`，并同步修正设置页连接测试，和 OpenAI Python SDK 的实际请求行为保持一致；本地 Gateway 链路不再因为错误去掉 `Bearer` 而触发 401
+  - `internal/providers/openai.go`、`internal/providers/openai_test.go`、`internal/webui/server.go`、`internal/webui/server_test.go`
+  - 验证：`python OpenAI(base_url='https://api.minimaxi.com/v1').chat.completions.create(...)`、`curl -X POST http://127.0.0.1:18890/api/message?stream=1 ...`、`go test ./internal/providers ./internal/webui`、`make build`
+
 - **后台 Gateway 重启脚本参数对齐独立二进制入口**：修正 `start_daemon.sh`、`start_all.sh`、`stop_daemon.sh`、`run_gateway.sh` 对 `maxclaw-gateway` 的调用与进程匹配模式，避免 `make backend-restart` / `make electron-restart` 仍按旧参数启动导致 Gateway 起不来
   - `scripts/start_daemon.sh`、`scripts/start_all.sh`、`scripts/stop_daemon.sh`、`scripts/run_gateway.sh`
   - 验证：`make backend-restart`、`lsof -iTCP:18890 -sTCP:LISTEN`、`make electron-restart`、`curl http://127.0.0.1:18890/api/status`、`make build`

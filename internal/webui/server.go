@@ -1863,7 +1863,7 @@ func (s *Server) handleTestProvider(w http.ResponseWriter, r *http.Request) {
 			baseURL = normalizeMiniMaxBaseURL(baseURL)
 			method = http.MethodPost
 			testURL = strings.TrimRight(baseURL, "/") + "/chat/completions"
-			headers["Authorization"] = req.APIKey
+			headers["Authorization"] = "Bearer " + req.APIKey
 			headers["Content-Type"] = "application/json"
 			probe := providerProbePayload{
 				Model: "MiniMax-M2.5",

@@ -671,10 +671,6 @@ func setCommonHeaders(req *http.Request, apiKey, apiBase, provider string) {
 }
 
 func authorizationHeaderValue(apiKey, apiBase, provider string) string {
-	base := strings.ToLower(strings.TrimSpace(apiBase))
-	if strings.EqualFold(provider, "minimax") || strings.Contains(base, "minimax") || strings.Contains(base, "minimaxi") {
-		return apiKey
-	}
 	return "Bearer " + apiKey
 }
 

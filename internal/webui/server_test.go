@@ -152,7 +152,7 @@ func TestHandleTestProviderMiniMaxUsesRawAuthorizationAndChatCompletions(t *test
 
 	require.Equal(t, http.StatusOK, rec.Code)
 	assert.Equal(t, "/v1/chat/completions", requestPath)
-	assert.Equal(t, "sk-mini", authHeader)
+	assert.Equal(t, "Bearer sk-mini", authHeader)
 }
 
 func TestReadChannelSenderStatsAggregatesInboundMessages(t *testing.T) {
