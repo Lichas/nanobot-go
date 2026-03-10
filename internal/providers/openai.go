@@ -84,7 +84,7 @@ func (p *OpenAIProvider) Chat(ctx context.Context, messages []Message, tools []m
 		fmt.Printf("[OpenAIProvider] Request:\n%s\n", string(payload))
 	}
 
-	respBody, err := p.doRequest(ctx, payload, false)
+	respBody, err := p.doRequest(ctx, payload, false, model)
 	if err != nil {
 		return nil, p.wrapModelRequestError("chat request failed", model, err)
 	}
@@ -153,7 +153,7 @@ func (p *OpenAIProvider) ChatStream(ctx context.Context, messages []Message, too
 		fmt.Printf("[OpenAIProvider] Stream Request:\n%s\n", string(payload))
 	}
 
-	stream, err := p.doStreamRequest(ctx, payload)
+	stream, err := p.doStreamRequest(ctx, payload, model)
 	if err != nil {
 		wrappedErr := p.wrapModelRequestError("stream request failed", model, err)
 		handler.OnError(wrappedErr)
@@ -285,6 +285,12 @@ func (p *OpenAIProvider) detectProvider(model string) string {
 		switch prefix {
 		case "openrouter", "anthropic", "openai", "deepseek", "zhipu", "groq", "gemini", "dashscope", "moonshot", "minimax", "vllm":
 			return prefix
+		}
+	}
+
+	for _, spec := range ProviderSpecs {
+		if spec.MatchesModel(normalizedModel) {
+			return spec.Name
 		}
 	}
 
@@ -511,7 +517,7 @@ func buildInlineDataURL(part ContentPart) string {
 }
 
 // doRequest 执行非流式请求（带重试机制）
-func (p *OpenAIProvider) doRequest(ctx context.Context, payload []byte, stream bool) ([]byte, error) {
+func (p *OpenAIProvider) doRequest(ctx context.Context, payload []byte, stream bool, model string) ([]byte, error) {
 	endpoint := p.apiBase + "/chat/completions"
 
 	const maxRetries = 3
@@ -533,7 +539,7 @@ func (p *OpenAIProvider) doRequest(ctx context.Context, payload []byte, stream b
 			return nil, fmt.Errorf("failed to create request: %w", err)
 		}
 
-		setCommonHeaders(req, p.apiKey)
+		setCommonHeaders(req, p.apiKey, p.apiBase, p.detectProvider(model))
 
 		if stream {
 			req.Header.Set("Accept", "text/event-stream")
@@ -607,7 +613,7 @@ func isRetryableError(err error) bool {
 }
 
 // doStreamRequest 执行流式请求（带重试机制）
-func (p *OpenAIProvider) doStreamRequest(ctx context.Context, payload []byte) (io.ReadCloser, error) {
+func (p *OpenAIProvider) doStreamRequest(ctx context.Context, payload []byte, model string) (io.ReadCloser, error) {
 	endpoint := p.apiBase + "/chat/completions"
 
 	const maxRetries = 3
@@ -629,7 +635,7 @@ func (p *OpenAIProvider) doStreamRequest(ctx context.Context, payload []byte) (i
 			return nil, fmt.Errorf("failed to create request: %w", err)
 		}
 
-		setCommonHeaders(req, p.apiKey)
+		setCommonHeaders(req, p.apiKey, p.apiBase, p.detectProvider(model))
 		req.Header.Set("Accept", "text/event-stream")
 
 		resp, err := p.streamClient.Do(req)
@@ -659,9 +665,17 @@ func (p *OpenAIProvider) doStreamRequest(ctx context.Context, payload []byte) (i
 	return nil, fmt.Errorf("stream request failed after %d attempts: %w", maxRetries, lastErr)
 }
 
-func setCommonHeaders(req *http.Request, apiKey string) {
-	req.Header.Set("Authorization", "Bearer "+apiKey)
+func setCommonHeaders(req *http.Request, apiKey, apiBase, provider string) {
+	req.Header.Set("Authorization", authorizationHeaderValue(apiKey, apiBase, provider))
 	req.Header.Set("Content-Type", "application/json")
+}
+
+func authorizationHeaderValue(apiKey, apiBase, provider string) string {
+	base := strings.ToLower(strings.TrimSpace(apiBase))
+	if strings.EqualFold(provider, "minimax") || strings.Contains(base, "minimax") || strings.Contains(base, "minimaxi") {
+		return apiKey
+	}
+	return "Bearer " + apiKey
 }
 
 func formatAPIError(body []byte, status int) string {

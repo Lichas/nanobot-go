@@ -1,7 +1,10 @@
 package providers
 
 import (
+	"context"
 	"encoding/json"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"strings"
@@ -225,5 +228,35 @@ func TestOpenAIProviderSupportsImageInputUsesResolver(t *testing.T) {
 	}
 	if provider.SupportsImageInput("deepseek-chat") {
 		t.Fatal("expected resolver to keep unrelated models disabled")
+	}
+}
+
+func TestAuthorizationHeaderValueUsesRawKeyForMiniMax(t *testing.T) {
+	got := authorizationHeaderValue("sk-minimax", "https://api.minimax.com/v1", "minimax")
+	if got != "sk-minimax" {
+		t.Fatalf("expected raw api key for minimax, got %q", got)
+	}
+}
+
+func TestOpenAIProviderMiniMaxRequestUsesRawAuthorization(t *testing.T) {
+	var authHeader string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		authHeader = r.Header.Get("Authorization")
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"choices":[{"message":{"role":"assistant","content":"ok"}}]}`))
+	}))
+	defer server.Close()
+
+	provider, err := NewOpenAIProvider("sk-minimax", server.URL, "MiniMax-M2.5", 32, 0, func(string) bool { return false })
+	if err != nil {
+		t.Fatalf("NewOpenAIProvider failed: %v", err)
+	}
+
+	_, err = provider.Chat(context.Background(), []Message{{Role: "user", Content: "ping"}}, nil, "MiniMax-M2.5")
+	if err != nil {
+		t.Fatalf("Chat failed: %v", err)
+	}
+	if authHeader != "sk-minimax" {
+		t.Fatalf("expected raw api key auth header, got %q", authHeader)
 	}
 }

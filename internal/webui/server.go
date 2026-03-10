@@ -1808,6 +1808,16 @@ type ProviderTestRequest struct {
 	APIFormat string `json:"apiFormat"`
 }
 
+type providerProbePayload struct {
+	Model       string `json:"model"`
+	Messages    []struct {
+		Role    string `json:"role"`
+		Content string `json:"content"`
+	} `json:"messages"`
+	MaxTokens   int     `json:"max_tokens"`
+	Temperature float64 `json:"temperature"`
+}
+
 func (s *Server) handleTestProvider(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		w.WriteHeader(http.StatusMethodNotAllowed)
@@ -1828,7 +1838,11 @@ func (s *Server) handleTestProvider(w http.ResponseWriter, r *http.Request) {
 	// Test the provider connection
 	client := &http.Client{Timeout: 10 * time.Second}
 
-	var testURL string
+	var (
+		method  = http.MethodGet
+		testURL string
+		body    io.Reader
+	)
 	headers := make(map[string]string)
 
 	switch req.APIFormat {
@@ -1842,6 +1856,35 @@ func (s *Server) handleTestProvider(w http.ResponseWriter, r *http.Request) {
 		headers["anthropic-version"] = "2023-06-01"
 	default: // openai
 		baseURL := req.BaseURL
+		if strings.EqualFold(req.Name, "MiniMax") {
+			if baseURL == "" {
+				baseURL = "https://api.minimax.io/v1"
+			}
+			baseURL = normalizeMiniMaxBaseURL(baseURL)
+			method = http.MethodPost
+			testURL = strings.TrimRight(baseURL, "/") + "/chat/completions"
+			headers["Authorization"] = req.APIKey
+			headers["Content-Type"] = "application/json"
+			probe := providerProbePayload{
+				Model: "MiniMax-M2.5",
+				Messages: []struct {
+					Role    string `json:"role"`
+					Content string `json:"content"`
+				}{
+					{Role: "user", Content: "ping"},
+				},
+				MaxTokens:   1,
+				Temperature: 0,
+			}
+			payload, err := json.Marshal(probe)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			body = strings.NewReader(string(payload))
+			break
+		}
+
 		if baseURL == "" {
 			// Try to determine from provider name
 			switch req.Name {
@@ -1861,7 +1904,7 @@ func (s *Server) handleTestProvider(w http.ResponseWriter, r *http.Request) {
 		headers["Authorization"] = "Bearer " + req.APIKey
 	}
 
-	httpReq, err := http.NewRequest("GET", testURL, nil)
+	httpReq, err := http.NewRequest(method, testURL, body)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -1884,6 +1927,14 @@ func (s *Server) handleTestProvider(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, map[string]bool{"ok": true})
+}
+
+func normalizeMiniMaxBaseURL(raw string) string {
+	trimmed := strings.TrimSpace(raw)
+	if trimmed == "" {
+		return raw
+	}
+	return strings.Replace(trimmed, "api.minimaxi.com", "api.minimax.com", 1)
 }
 
 // handleTestChannel tests IM channel connections (telegram, discord, etc.)

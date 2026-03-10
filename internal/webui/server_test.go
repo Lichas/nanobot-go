@@ -3,6 +3,7 @@ package webui
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -122,6 +123,36 @@ func TestExtractImageAttachmentIgnoresNonImageFiles(t *testing.T) {
 	})
 
 	assert.Nil(t, got)
+}
+
+func TestNormalizeMiniMaxBaseURLRewritesLegacyChinaDomain(t *testing.T) {
+	got := normalizeMiniMaxBaseURL("https://api.minimaxi.com/v1")
+	assert.Equal(t, "https://api.minimax.com/v1", got)
+}
+
+func TestHandleTestProviderMiniMaxUsesRawAuthorizationAndChatCompletions(t *testing.T) {
+	var (
+		requestPath string
+		authHeader  string
+	)
+	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requestPath = r.URL.Path
+		authHeader = r.Header.Get("Authorization")
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"id":"ok"}`))
+	}))
+	defer upstream.Close()
+
+	s := &Server{}
+	body := bytes.NewBufferString(fmt.Sprintf(`{"name":"MiniMax","apiKey":"sk-mini","baseURL":"%s/v1","apiFormat":"openai"}`, upstream.URL))
+	req := httptest.NewRequest(http.MethodPost, "/api/providers/test", body)
+	rec := httptest.NewRecorder()
+
+	s.handleTestProvider(rec, req)
+
+	require.Equal(t, http.StatusOK, rec.Code)
+	assert.Equal(t, "/v1/chat/completions", requestPath)
+	assert.Equal(t, "sk-mini", authHeader)
 }
 
 func TestReadChannelSenderStatsAggregatesInboundMessages(t *testing.T) {

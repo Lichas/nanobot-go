@@ -438,19 +438,22 @@ func (c *Config) GetAPIBase(model string) string {
 }
 
 func normalizeProviderAPIBase(providerName, model, apiBase string) string {
-	if providerName != "zhipu" {
-		return apiBase
-	}
-
 	normalizedModel := strings.ToLower(strings.TrimSpace(model))
 	normalizedBase := strings.TrimRight(strings.TrimSpace(apiBase), "/")
 	if normalizedBase == "" {
 		return apiBase
 	}
 
-	if zhipuVisionModel(normalizedModel) {
-		if strings.HasSuffix(normalizedBase, "/api/coding/paas/v4") {
-			return strings.TrimSuffix(normalizedBase, "/api/coding/paas/v4") + "/api/paas/v4"
+	switch providerName {
+	case "zhipu":
+		if zhipuVisionModel(normalizedModel) {
+			if strings.HasSuffix(normalizedBase, "/api/coding/paas/v4") {
+				return strings.TrimSuffix(normalizedBase, "/api/coding/paas/v4") + "/api/paas/v4"
+			}
+		}
+	case "minimax":
+		if strings.Contains(normalizedBase, "api.minimaxi.com") {
+			return strings.Replace(apiBase, "api.minimaxi.com", "api.minimax.com", 1)
 		}
 	}
 
